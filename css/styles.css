@@ -862,3 +862,45 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
   .hotfoto-home .hf-stats{width:90%!important;margin:-18px auto 0!important}
   .hotfoto-home .hf-intelligence{padding-top:58px!important}
 }
+
+/* HOTFOTO V21 — Intelligence cards: signature product moment */
+.hotfoto-home .hf-intelligence{position:relative;overflow:hidden;background:radial-gradient(circle at 14% 18%,rgba(22,215,255,.07),transparent 28%),radial-gradient(circle at 88% 42%,rgba(114,85,255,.07),transparent 30%),#f7fbff!important}
+.hotfoto-home .hf-intelligence:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 0 42%,rgba(255,255,255,.48) 50%,transparent 58%);transform:translateX(-120%);animation:hfIntelSweep 11s ease-in-out infinite}
+@keyframes hfIntelSweep{0%,55%{transform:translateX(-120%)}72%,100%{transform:translateX(120%)}}
+.hotfoto-home .hf-intel-grid{position:relative;z-index:2;grid-template-columns:minmax(0,1.28fr) minmax(320px,.82fr);gap:20px}
+.hotfoto-home .hf-intel-feature,.hotfoto-home .hf-mini{isolation:isolate;background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(246,250,255,.96))!important;border:1px solid rgba(100,145,190,.2)!important;box-shadow:0 20px 55px rgba(16,52,91,.09),inset 0 1px 0 rgba(255,255,255,.95)!important}
+.hotfoto-home .hf-intel-feature:before,.hotfoto-home .hf-mini:before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(circle at 92% 4%,rgba(109,91,255,.12),transparent 24%),radial-gradient(circle at 8% 100%,rgba(15,213,239,.08),transparent 25%);z-index:-1}
+.hotfoto-home .hf-intel-feature:after,.hotfoto-home .hf-mini:after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#12d8ef,#7255ff,#e74bff);opacity:.85}
+.hotfoto-home .hf-intel-feature{min-height:455px;padding:30px;transform-style:preserve-3d}
+.hotfoto-home .hf-intel-feature:hover{transform:translateY(-9px) rotateX(.6deg)!important;box-shadow:0 35px 90px rgba(35,77,122,.16),0 0 0 1px rgba(114,85,255,.08)!important}
+.hotfoto-home .hf-intel-feature>span,.hotfoto-home .hf-mini>span{display:inline-flex;align-items:center;gap:7px;color:#647b96;font-weight:800}
+.hotfoto-home .hf-intel-feature>span:before,.hotfoto-home .hf-mini>span:before{content:"";width:6px;height:6px;border-radius:50%;background:#16d8ef;box-shadow:0 0 12px rgba(22,216,239,.7)}
+.hotfoto-home .hf-intel-feature h3{font-size:34px!important;margin:10px 0 8px!important;letter-spacing:-.05em}
+.hotfoto-home .hf-intel-feature p{font-size:12px!important;max-width:560px}
+.hotfoto-home .hf-intel-feature>b,.hotfoto-home .hf-mini>b{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#effaff,#f0edff);border:1px solid rgba(96,130,180,.16);box-shadow:0 8px 22px rgba(73,97,140,.1);font-size:16px;z-index:3}
+.hotfoto-home .hf-console{left:30px;right:30px;bottom:30px;padding:18px 18px 16px;border:1px solid rgba(86,130,190,.22);background:linear-gradient(145deg,#06142a,#0a1931 60%,#101b40)!important;box-shadow:0 24px 55px rgba(3,15,35,.28),inset 0 1px 0 rgba(255,255,255,.07)!important}
+.hotfoto-home .hf-console:before{content:"AI DIRECTOR • LIVE PLAN";display:block;position:absolute;right:16px;top:14px;color:#6eeeff;font-size:7px;letter-spacing:.14em;font-weight:800}
+.hotfoto-home .hf-console:after{content:"";display:block;position:absolute;left:18px;right:18px;top:0;height:1px;background:linear-gradient(90deg,transparent,#1ad9f0,#7255ff,transparent);opacity:.8}
+.hotfoto-home .hf-console p{font-size:12px!important;max-width:80%!important}
+.hotfoto-home .hf-console strong{font-size:11px!important;line-height:1.45}
+.hotfoto-home .hf-console button{position:relative;overflow:hidden;transition:.3s;box-shadow:0 8px 24px rgba(43,108,255,.25)}
+.hotfoto-home .hf-console button:after{content:"";position:absolute;top:0;bottom:0;width:70px;background:rgba(255,255,255,.24);transform:translateX(-120px) skewX(-18deg);animation:hfButtonSweep 4.5s ease-in-out infinite}
+@keyframes hfButtonSweep{0%,65%{transform:translateX(-120px) skewX(-18deg)}82%,100%{transform:translateX(520px) skewX(-18deg)}}
+.hotfoto-home .hf-console button:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(43,108,255,.35)}
+.hotfoto-home .hf-intel-stack{gap:20px}
+.hotfoto-home .hf-mini{min-height:217px;padding:27px;transform-style:preserve-3d}
+.hotfoto-home .hf-mini:hover{transform:translateY(-8px) rotateX(.7deg)!important}
+.hotfoto-home .hf-mini h3{font-size:28px!important;margin:9px 0 7px!important}
+.hotfoto-home .hf-mini p{font-size:11px!important}
+.hotfoto-home .hf-bars{left:27px;right:27px;bottom:28px;gap:8px}
+.hotfoto-home .hf-bars:before{content:"STYLE SIGNATURE / 94% MATCH";display:block;color:#71839d;font-size:7px;letter-spacing:.15em;font-weight:800;margin-bottom:2px}
+.hotfoto-home .hf-bars i{height:4px!important;background:linear-gradient(90deg,#12d8ef,#4b8dff,#7255ff)!important;box-shadow:0 0 9px rgba(91,104,255,.16)}
+.hotfoto-home .hf-mini:nth-child(1) .hf-bars i{animation:hfBarPulse 4s ease-in-out infinite alternate}
+@keyframes hfBarPulse{from{filter:brightness(.9)}to{filter:brightness(1.25);box-shadow:0 0 14px rgba(114,85,255,.28)}}
+.hotfoto-home .hf-big-number{font-size:31px!important;letter-spacing:-.045em}
+.hotfoto-home .hf-big-number:before{content:"AI CULL / KEEPERS";display:block;font-size:7px;letter-spacing:.15em;color:#71839d;margin-bottom:5px}
+.hotfoto-home .hf-big-number i{font-size:.85em}
+.hotfoto-home .hf-intelligence .btn{position:relative;z-index:3;border-radius:12px!important;box-shadow:0 12px 30px rgba(41,113,231,.2)!important}
+.hotfoto-home .hf-intelligence .btn:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(41,113,231,.28)!important}
+@media(max-width:900px){.hotfoto-home .hf-intel-grid{grid-template-columns:1fr}.hotfoto-home .hf-intel-feature{min-height:430px}.hotfoto-home .hf-intel-stack{grid-template-columns:1fr 1fr;display:grid}}
+@media(max-width:700px){.hotfoto-home .hf-intel-grid{gap:14px}.hotfoto-home .hf-intel-feature{min-height:450px;padding:22px}.hotfoto-home .hf-console{left:22px;right:22px;bottom:22px}.hotfoto-home .hf-console:before{display:none}.hotfoto-home .hf-intel-stack{grid-template-columns:1fr;gap:14px}.hotfoto-home .hf-mini{min-height:195px;padding:22px}.hotfoto-home .hf-intel-feature h3{font-size:29px!important}.hotfoto-home .hf-mini h3{font-size:25px!important}}
