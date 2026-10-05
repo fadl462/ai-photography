@@ -595,3 +595,39 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
   .hotfoto-home .hf-proof,.hotfoto-home .hf-intelligence{padding-top:48px!important;padding-bottom:52px!important}
   .hotfoto-home .hf-workflow-banner,.hotfoto-home .hf-final{padding-top:56px!important;padding-bottom:56px!important}
 }
+
+/* HotFoto V18 — final homepage polish: full RAW word, refined ticker, visible capability tags */
+.hotfoto-home .hf-hero h1{overflow:visible!important;max-width:none!important;white-space:normal!important}
+.hotfoto-home .hf-hero h1 i,
+.hotfoto-home .hf-hero h1 b{display:inline-block!important;overflow:visible!important;white-space:nowrap!important;padding-right:.06em}
+.hotfoto-home .hf-hero h1 i{font-size:clamp(64px,7.45vw,114px)!important;line-height:.88!important;letter-spacing:-.055em!important}
+.hotfoto-home .hf-hero h1 b{font-size:1.02em!important;line-height:.88!important;letter-spacing:-.045em!important}
+
+/* The capability scroller is a deliberate product ticker — compact, legible and continuous. */
+.hotfoto-home .hf-marquee{height:56px!important;display:flex!important;align-items:center!important;position:relative!important;background:linear-gradient(90deg,#061126,#081b34 50%,#091126)!important;border-top:1px solid rgba(24,215,255,.42)!important;border-bottom:1px solid rgba(114,85,255,.42)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 10px 28px rgba(4,14,30,.08)!important}
+.hotfoto-home .hf-marquee:before,.hotfoto-home .hf-marquee:after{content:"";position:absolute;top:0;bottom:0;width:90px;z-index:2;pointer-events:none}
+.hotfoto-home .hf-marquee:before{left:0;background:linear-gradient(90deg,#061126,transparent)}
+.hotfoto-home .hf-marquee:after{right:0;background:linear-gradient(270deg,#091126,transparent)}
+.hotfoto-home .hf-marquee div{padding:0!important;gap:22px!important;height:100%;font-size:9px!important;letter-spacing:.18em!important;color:#dbe8f7!important;animation:hf-marquee 24s linear infinite!important}
+.hotfoto-home .hf-marquee div span{display:inline-flex;align-items:center;height:100%;font-weight:800;white-space:nowrap}
+.hotfoto-home .hf-marquee div i{font-size:11px!important;color:#18d7ff!important;opacity:.95}
+.hotfoto-home .hf-marquee:hover div{animation-play-state:paused!important}
+
+/* Capability tags: readable at a glance instead of disappearing into the dark section. */
+.hotfoto-home .hf-tags{gap:10px!important;margin-top:24px!important;position:relative!important;z-index:5!important}
+.hotfoto-home .hf-tags span{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:34px!important;padding:8px 13px!important;border:1px solid rgba(120,161,201,.38)!important;border-radius:999px!important;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 7px 18px rgba(0,0,0,.12)!important;color:#e8f3ff!important;font:700 10px/1 var(--sans)!important;letter-spacing:.015em!important;white-space:nowrap!important}
+.hotfoto-home .hf-tags span::first-letter{color:#18d7ff!important}
+.hotfoto-home .hf-tags span:hover{border-color:rgba(24,215,255,.75)!important;background:rgba(24,215,255,.08)!important;color:#fff!important;transform:translateY(-2px)!important}
+
+/* Remove any accidental blank block at the end of the proof composition. */
+.hotfoto-home .hf-proof{overflow:hidden!important}
+.hotfoto-home .hf-proof-grid{margin-bottom:0!important}
+
+@media(max-width:700px){
+  .hotfoto-home .hf-hero h1 i{font-size:clamp(58px,15.2vw,88px)!important}
+  .hotfoto-home .hf-hero h1 b{font-size:1em!important}
+  .hotfoto-home .hf-marquee{height:50px!important}
+  .hotfoto-home .hf-marquee div{font-size:8px!important;gap:17px!important;letter-spacing:.14em!important}
+  .hotfoto-home .hf-tags{gap:8px!important}
+  .hotfoto-home .hf-tags span{font-size:9px!important;min-height:32px!important;padding:8px 11px!important}
+}
