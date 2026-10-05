@@ -33,3 +33,36 @@ if(ba&&stage){
 // subtle cursor glow for the cinematic hero
 const hero=document.querySelector('.hero');
 if(hero){hero.addEventListener('pointermove',e=>{const r=hero.getBoundingClientRect();hero.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');hero.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%')});}
+
+// FADL VISUAL ENGINE — theme system
+const themePanel=document.querySelector('#themePanel');
+const themeScrim=document.querySelector('#themeScrim');
+const themeTrigger=document.querySelector('#themeTrigger');
+const themeClose=document.querySelector('#themeClose');
+const heroThemeBtn=document.querySelector('#heroThemeBtn');
+const themeButtons=document.querySelectorAll('.theme-option,[data-theme]:not(.theme-option)');
+const accentPicker=document.querySelector('#accentPicker');
+const glowRange=document.querySelector('#glowRange');
+const motionRange=document.querySelector('#motionRange');
+const themeNames={obsidian:'Obsidian Studio',aurora:'Aurora',editorial:'Editorial',neon:'Neon Creative',pure:'Pure Light'};
+const themeAccents={obsidian:'#d9ff58',aurora:'#57e7ff',editorial:'#c98a4c',neon:'#ff4dc7',pure:'#5367e8'};
+function setTheme(theme,persist=true){
+  document.body.dataset.theme=theme;
+  document.documentElement.style.setProperty('--theme-name',`'${themeNames[theme]}'`);
+  if(themeAccents[theme] && accentPicker){accentPicker.value=themeAccents[theme]; document.documentElement.style.setProperty('--accent',themeAccents[theme]);}
+  document.querySelectorAll('.theme-option').forEach(b=>{const active=b.dataset.theme===theme;b.classList.toggle('active',active);b.setAttribute('aria-checked',String(active))});
+  document.querySelectorAll('.palette-swatches [data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));
+  const chip=document.querySelector('.hero-theme-chip b');if(chip)chip.textContent=themeNames[theme].toUpperCase();
+  if(persist)localStorage.setItem('fadl-theme',theme);
+}
+function openThemes(){themePanel?.classList.add('open');themeScrim?.classList.add('open');themePanel?.setAttribute('aria-hidden','false')}
+function closeThemes(){themePanel?.classList.remove('open');themeScrim?.classList.remove('open');themePanel?.setAttribute('aria-hidden','true')}
+themeTrigger?.addEventListener('click',openThemes);themeClose?.addEventListener('click',closeThemes);themeScrim?.addEventListener('click',closeThemes);heroThemeBtn?.addEventListener('click',openThemes);
+themeButtons.forEach(b=>b.addEventListener('click',()=>{setTheme(b.dataset.theme);if(b.classList.contains('theme-option')===false)closeThemes()}));
+accentPicker?.addEventListener('input',e=>{const hex=e.target.value;document.documentElement.style.setProperty('--accent',hex);const n=hex.replace('#','');const r=parseInt(n.slice(0,2),16),g=parseInt(n.slice(2,4),16),bl=parseInt(n.slice(4,6),16);document.documentElement.style.setProperty('--accent-rgb',`${r},${g},${bl}`);localStorage.setItem('fadl-accent',hex)});
+glowRange?.addEventListener('input',e=>{document.documentElement.style.setProperty('--glow-strength',(e.target.value/100).toFixed(2));localStorage.setItem('fadl-glow',e.target.value)});
+motionRange?.addEventListener('input',e=>{document.documentElement.style.setProperty('--motion-scale',(e.target.value/70).toFixed(2));localStorage.setItem('fadl-motion',e.target.value)});
+const savedTheme=localStorage.getItem('fadl-theme')||'obsidian';setTheme(savedTheme,false);
+const savedAccent=localStorage.getItem('fadl-accent');if(savedAccent&&accentPicker){accentPicker.value=savedAccent;document.documentElement.style.setProperty('--accent',savedAccent);const n=savedAccent.slice(1);document.documentElement.style.setProperty('--accent-rgb',`${parseInt(n.slice(0,2),16)},${parseInt(n.slice(2,4),16)},${parseInt(n.slice(4,6),16)}`)}
+if(glowRange&&localStorage.getItem('fadl-glow')){glowRange.value=localStorage.getItem('fadl-glow');document.documentElement.style.setProperty('--glow-strength',(glowRange.value/100).toFixed(2))}
+if(motionRange&&localStorage.getItem('fadl-motion')){motionRange.value=localStorage.getItem('fadl-motion');document.documentElement.style.setProperty('--motion-scale',(motionRange.value/70).toFixed(2))}
