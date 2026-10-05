@@ -639,3 +639,107 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
   .hotfoto-home .hf-tags{gap:8px!important}
   .hotfoto-home .hf-tags span{font-size:9px!important;min-height:32px!important;padding:8px 11px!important}
 }
+
+/* HotFoto V20 — Intelligence + production telemetry visual upgrade */
+.hotfoto-home .hf-stats{
+  position:relative;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;
+  padding:22px 6.8%!important;
+  background:linear-gradient(180deg,#f8fcff 0%,#eef7ff 100%)!important;
+  border:0!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(91,141,190,.12)!important;
+}
+.hotfoto-home .hf-stats:before{
+  content:"PRODUCTION TELEMETRY";
+  position:absolute;left:6.8%;top:7px;
+  font-size:6px;font-weight:900;letter-spacing:.22em;color:#7890aa;
+}
+.hotfoto-home .hf-stats div{
+  position:relative!important;
+  min-height:82px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  padding:17px 22px!important;
+  border:1px solid #d7e6f3!important;
+  border-radius:14px!important;
+  background:rgba(255,255,255,.76)!important;
+  box-shadow:0 10px 28px rgba(28,69,105,.055)!important;
+  overflow:hidden!important;
+  transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease!important;
+}
+.hotfoto-home .hf-stats div:before{
+  content:"";position:absolute;left:0;top:0;right:0;height:2px;
+  background:linear-gradient(90deg,#18d7ff,#7255ff);opacity:.75;
+}
+.hotfoto-home .hf-stats div:after{
+  content:"";position:absolute;width:90px;height:90px;right:-42px;bottom:-48px;border-radius:50%;
+  background:radial-gradient(circle,rgba(24,215,255,.13),transparent 68%);pointer-events:none;
+}
+.hotfoto-home .hf-stats div:hover{transform:translateY(-3px);border-color:#b8d5eb!important;box-shadow:0 16px 34px rgba(28,69,105,.10)!important}
+.hotfoto-home .hf-stats div:first-child,.hotfoto-home .hf-stats div:last-child{padding-left:22px!important}
+.hotfoto-home .hf-stats strong{font-size:30px!important;line-height:1!important;color:#071328!important}
+.hotfoto-home .hf-stats span{font-size:8px!important;letter-spacing:.06em!important;color:#71849a!important;margin-top:8px!important}
+
+.hotfoto-home .hf-intelligence{
+  position:relative;
+  background:radial-gradient(circle at 85% 15%,rgba(24,215,255,.08),transparent 28%),linear-gradient(180deg,#f8fcff 0%,#f1f7fc 100%)!important;
+}
+.hotfoto-home .hf-intelligence:before{
+  content:"";position:absolute;left:6.8%;right:6.8%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,#cfe0ef,transparent);
+}
+.hotfoto-home .hf-intelligence .hf-section-intro h2{max-width:760px}
+.hotfoto-home .hf-intel-grid{gap:20px!important}
+.hotfoto-home .hf-intel-feature,.hotfoto-home .hf-mini{
+  background:rgba(255,255,255,.9)!important;
+  border:1px solid #d4e4f0!important;
+  box-shadow:0 18px 48px rgba(26,63,99,.075)!important;
+  backdrop-filter:blur(12px);
+}
+.hotfoto-home .hf-intel-feature{
+  min-height:440px!important;
+  padding:30px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(246,251,255,.92))!important;
+}
+.hotfoto-home .hf-intel-feature:after{
+  content:"AI";position:absolute;right:-18px;top:-28px;width:130px;height:130px;border-radius:50%;
+  display:grid;place-items:center;font:900 42px var(--display);color:rgba(114,85,255,.12);
+  border:1px solid rgba(114,85,255,.10);
+}
+.hotfoto-home .hf-intel-feature h3,.hotfoto-home .hf-mini h3{letter-spacing:-.04em!important}
+.hotfoto-home .hf-intel-feature h3{font-size:32px!important}
+.hotfoto-home .hf-intel-feature p,.hotfoto-home .hf-mini p{font-size:11.5px!important;color:#6e8097!important}
+.hotfoto-home .hf-console{
+  left:30px!important;right:30px!important;bottom:30px!important;
+  padding:18px!important;border:1px solid rgba(89,221,255,.18)!important;
+  box-shadow:0 20px 42px rgba(3,15,35,.22),0 0 35px rgba(24,215,255,.06)!important;
+}
+.hotfoto-home .hf-console button{box-shadow:0 8px 22px rgba(82,91,255,.28)!important}
+.hotfoto-home .hf-intel-stack{gap:20px!important}
+.hotfoto-home .hf-mini{min-height:210px!important;padding:26px!important}
+.hotfoto-home .hf-mini:before{
+  content:"";position:absolute;right:20px;top:20px;width:42px;height:42px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(24,215,255,.12),rgba(114,85,255,.12));
+  border:1px solid rgba(114,85,255,.13);
+}
+.hotfoto-home .hf-mini:nth-child(1):before{content:"✦";display:grid;place-items:center;color:#7255ff;font-size:17px}
+.hotfoto-home .hf-mini:nth-child(2):before{content:"◎";display:grid;place-items:center;color:#18bfe8;font-size:17px}
+.hotfoto-home .hf-bars{bottom:24px!important;left:26px!important;right:26px!important;gap:8px!important}
+.hotfoto-home .hf-bars i{height:4px!important;box-shadow:0 0 8px rgba(24,215,255,.14)}
+.hotfoto-home .hf-big-number{bottom:25px!important;left:26px!important;font-size:30px!important}
+.hotfoto-home .hf-intelligence .btn{box-shadow:0 10px 24px rgba(24,180,230,.16)}
+
+@media(max-width:1000px){
+  .hotfoto-home .hf-stats{grid-template-columns:repeat(2,1fr)!important}
+}
+@media(max-width:700px){
+  .hotfoto-home .hf-stats{grid-template-columns:1fr 1fr!important;padding:25px 6%!important;gap:10px!important}
+  .hotfoto-home .hf-stats:before{left:6%;top:7px}
+  .hotfoto-home .hf-stats div{min-height:76px!important;padding:15px!important}
+  .hotfoto-home .hf-stats strong{font-size:25px!important}
+  .hotfoto-home .hf-intel-feature{min-height:430px!important;padding:23px!important}
+  .hotfoto-home .hf-console{left:23px!important;right:23px!important;bottom:23px!important}
+}
