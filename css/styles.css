@@ -836,3 +836,29 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
   .hotfoto-home .hf-stats:before{display:none!important}
   .hotfoto-home .hf-intelligence{padding-top:64px!important}
 }
+
+/* HOTFOTO V20.2 — Production telemetry alignment pass */
+.hotfoto-home .hf-stats{
+  width:min(86%,1240px)!important;
+  margin:-30px auto 0!important;
+  padding:12px!important;
+  align-self:center!important;
+}
+.hotfoto-home .hf-stats:before{
+  left:20px!important;
+  top:-15px!important;
+}
+.hotfoto-home .hf-stats div{
+  min-width:0!important;
+}
+.hotfoto-home .hf-intelligence{
+  padding-top:82px!important;
+}
+@media(max-width:900px){
+  .hotfoto-home .hf-stats{width:88%!important;margin:-24px auto 0!important}
+  .hotfoto-home .hf-intelligence{padding-top:72px!important}
+}
+@media(max-width:700px){
+  .hotfoto-home .hf-stats{width:90%!important;margin:-18px auto 0!important}
+  .hotfoto-home .hf-intelligence{padding-top:58px!important}
+}
