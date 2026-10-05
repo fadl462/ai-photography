@@ -961,3 +961,37 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
 .pf-stage-active:before{content:"LIVE";position:absolute;right:14px;top:12px;font:700 7px Space Grotesk;letter-spacing:.16em;color:#62eaff}
 .pf-manifesto-foot{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;font:600 8px Space Grotesk;letter-spacing:.16em;color:#536d84}.pf-manifesto-foot i{width:4px;height:4px;border-radius:50%;background:#00dff4;box-shadow:0 0 10px #00dff4}
 @media(max-width:700px){.pf-manifesto{padding-top:58px;padding-bottom:38px}.pf-kicker{align-items:flex-start;flex-direction:column;gap:10px}.pf-system-id{padding-left:0;border-left:0}.pf-manifesto-grid{margin-top:26px;gap:28px}.pf-metrics{gap:9px;margin-top:34px}.pf-metrics>div{padding:18px}.pf-manifesto-foot{flex-wrap:wrap;text-align:center;line-height:1.7}.pf-manifesto-grid p{font-size:13px}.pf-stage small{min-height:auto}}
+
+/* V24 — manifesto visual polish: less copy, more visual presence */
+.hotfoto-platform .pf-manifesto{position:relative;overflow:hidden;padding-top:70px;padding-bottom:78px}
+.hotfoto-platform .pf-manifesto-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;border:0;padding:0}
+.hotfoto-platform .pf-manifesto-top .eyebrow{color:#6d8da8}
+.hotfoto-platform .pf-live{font:700 8px Space Grotesk;letter-spacing:.16em;color:#7f95aa;text-transform:uppercase}
+.hotfoto-platform .pf-live i{width:6px;height:6px;border-radius:50%;background:#00e5ff;box-shadow:0 0 16px rgba(0,229,255,.9);display:inline-block;margin-right:7px}
+.hotfoto-platform .pf-manifesto-grid{position:relative;z-index:2;margin-top:38px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.55fr);gap:90px;align-items:end}
+.hotfoto-platform .pf-manifesto h2{margin:0;font-size:clamp(48px,6vw,82px);line-height:.9;letter-spacing:-.075em}
+.hotfoto-platform .pf-manifesto-grid p{margin:0 0 5px;font-size:13px;line-height:1.8;color:#91a7bb;max-width:400px}
+.hotfoto-platform .pf-metrics{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:58px}
+.hotfoto-platform .pf-metrics>div{min-height:155px;padding:24px 24px 21px;border:1px solid rgba(255,255,255,.085);border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.012));overflow:hidden;transition:transform .35s ease,border-color .35s ease,background .35s ease;position:relative}
+.hotfoto-platform .pf-metrics>div:before{content:"";position:absolute;inset:auto -30px -70px auto;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,.13),transparent 68%);pointer-events:none}
+.hotfoto-platform .pf-metrics>div:nth-child(2):before{background:radial-gradient(circle,rgba(124,96,255,.14),transparent 68%)}
+.hotfoto-platform .pf-metrics>div:nth-child(3):before{background:radial-gradient(circle,rgba(244,182,95,.12),transparent 68%)}
+.hotfoto-platform .pf-metrics>div:hover{transform:translateY(-6px);border-color:rgba(0,229,255,.28);background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.018))}
+.hotfoto-platform .pf-stage-number{display:block;font:700 10px Space Grotesk;color:#61eaff;letter-spacing:.14em;margin-bottom:27px}
+.hotfoto-platform .pf-stage:nth-child(2) .pf-stage-number{color:#a18cff}
+.hotfoto-platform .pf-stage:nth-child(3) .pf-stage-number{color:#f4b65f}
+.hotfoto-platform .pf-stage span{display:block;font:800 17px/1 var(--display);letter-spacing:-.02em;color:#f4f8fb}
+.hotfoto-platform .pf-stage small{display:block;margin-top:9px;min-height:0;max-width:270px;color:#758ba0;font-size:10px;line-height:1.5}
+.hotfoto-platform .pf-stage-line{display:block;width:100%;height:2px;margin-top:20px;background:rgba(255,255,255,.07);position:relative}
+.hotfoto-platform .pf-stage-line:after{content:"";position:absolute;left:0;top:0;height:100%;width:28%;background:#00e5ff;box-shadow:0 0 14px rgba(0,229,255,.65)}
+.hotfoto-platform .pf-stage:nth-child(2) .pf-stage-line:after{width:58%;background:#8065ff;box-shadow:0 0 14px rgba(128,101,255,.55)}
+.hotfoto-platform .pf-stage:nth-child(3) .pf-stage-line:after{width:88%;background:#f4b65f;box-shadow:0 0 14px rgba(244,182,95,.5)}
+.hotfoto-platform .pf-stage-active:after{content:"";position:absolute;top:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,#00e5ff,transparent);opacity:.6}
+@media(max-width:700px){
+  .hotfoto-platform .pf-manifesto{padding-top:52px;padding-bottom:58px}
+  .hotfoto-platform .pf-manifesto-top{align-items:center}
+  .hotfoto-platform .pf-manifesto-grid{margin-top:30px;grid-template-columns:1fr;gap:24px}
+  .hotfoto-platform .pf-manifesto h2{font-size:clamp(43px,12vw,64px)}
+  .hotfoto-platform .pf-metrics{grid-template-columns:1fr;margin-top:38px}
+  .hotfoto-platform .pf-metrics>div{min-height:140px}
+}
