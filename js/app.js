@@ -24,3 +24,13 @@ const apply=$('#studioApply');apply?.addEventListener('click',()=>{apply.textCon
  }
  document.querySelectorAll('.hf-frame,.hf-note').forEach(el=>{el.addEventListener('pointermove',e=>{if(matchMedia('(pointer:coarse)').matches)return;const r=el.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;el.style.translate=`${x*6}px ${y*4}px`});el.addEventListener('pointerleave',()=>el.style.translate='')});
 })();
+
+
+/* HotFoto V19 — seamless full-width capability ticker */
+(function(){
+  const marquee = document.querySelector('.hf-marquee > div');
+  if(!marquee || marquee.dataset.seamless === 'true') return;
+  const original = marquee.innerHTML;
+  marquee.innerHTML = '<span class="hf-marquee-group">' + original + '</span><span class="hf-marquee-group" aria-hidden="true">' + original + '</span>';
+  marquee.dataset.seamless = 'true';
+})();

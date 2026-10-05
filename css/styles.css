@@ -611,7 +611,15 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
 .hotfoto-home .hf-marquee div{padding:0!important;gap:22px!important;height:100%;font-size:9px!important;letter-spacing:.18em!important;color:#dbe8f7!important;animation:hf-marquee 24s linear infinite!important}
 .hotfoto-home .hf-marquee div span{display:inline-flex;align-items:center;height:100%;font-weight:800;white-space:nowrap}
 .hotfoto-home .hf-marquee div i{font-size:11px!important;color:#18d7ff!important;opacity:.95}
-.hotfoto-home .hf-marquee:hover div{animation-play-state:paused!important}
+
+/* V19 — seamless edge-to-edge ticker: two identical groups create a true endless loop. */
+.hotfoto-home .hf-marquee{width:100%!important;overflow:hidden!important}
+.hotfoto-home .hf-marquee > div{width:max-content!important;min-width:max-content!important;display:flex!important;align-items:center!important;gap:0!important;animation:hf-marquee-seamless 24s linear infinite!important;transform:translate3d(0,0,0);will-change:transform}
+.hotfoto-home .hf-marquee-group{display:flex!important;align-items:center!important;gap:22px!important;flex:0 0 auto!important;height:100%!important;padding:0!important;margin:0!important}
+.hotfoto-home .hf-marquee-group span{display:inline-flex!important;align-items:center!important;height:100%!important;flex:0 0 auto!important;white-space:nowrap!important}
+.hotfoto-home .hf-marquee-group i{flex:0 0 auto!important}
+@keyframes hf-marquee-seamless{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+.hotfoto-home .hf-marquee:hover > div{animation-play-state:running!important}
 
 /* Capability tags: readable at a glance instead of disappearing into the dark section. */
 .hotfoto-home .hf-tags{gap:10px!important;margin-top:24px!important;position:relative!important;z-index:5!important}
