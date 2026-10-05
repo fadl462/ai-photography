@@ -904,3 +904,27 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
 .hotfoto-home .hf-intelligence .btn:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(41,113,231,.28)!important}
 @media(max-width:900px){.hotfoto-home .hf-intel-grid{grid-template-columns:1fr}.hotfoto-home .hf-intel-feature{min-height:430px}.hotfoto-home .hf-intel-stack{grid-template-columns:1fr 1fr;display:grid}}
 @media(max-width:700px){.hotfoto-home .hf-intel-grid{gap:14px}.hotfoto-home .hf-intel-feature{min-height:450px;padding:22px}.hotfoto-home .hf-console{left:22px;right:22px;bottom:22px}.hotfoto-home .hf-console:before{display:none}.hotfoto-home .hf-intel-stack{grid-template-columns:1fr;gap:14px}.hotfoto-home .hf-mini{min-height:195px;padding:22px}.hotfoto-home .hf-intel-feature h3{font-size:29px!important}.hotfoto-home .hf-mini h3{font-size:25px!important}}
+
+/* HOTFOTO V21.1 — intelligence card precision polish */
+.hotfoto-home .hf-intel-stack{align-content:start}
+.hotfoto-home .hf-mini{min-height:226px!important}
+.hotfoto-home .hf-mini > div{position:relative;z-index:2}
+.hotfoto-home .hf-mini p{margin-top:0!important;max-width:330px!important}
+.hotfoto-home .hf-mini:nth-child(1) p{padding-bottom:58px!important}
+.hotfoto-home .hf-mini:nth-child(2) p{padding-bottom:62px!important}
+.hotfoto-home .hf-mini:nth-child(1) .hf-bars{bottom:25px!important}
+.hotfoto-home .hf-bars:before{position:absolute!important;left:0;bottom:100%;margin-bottom:7px;white-space:nowrap}
+.hotfoto-home .hf-big-number{bottom:25px!important;line-height:1!important}
+.hotfoto-home .hf-big-number:before{margin-bottom:7px!important;line-height:1!important}
+.hotfoto-home .hf-mini:nth-child(2) .hf-big-number{display:block}
+.hotfoto-home .hf-intel-feature{min-height:455px!important}
+.hotfoto-home .hf-intel-feature h3{margin-bottom:10px!important}
+.hotfoto-home .hf-console{bottom:28px!important}
+.hotfoto-home .hf-console button{min-height:40px}
+.hotfoto-home .hf-intel-feature:before{background:radial-gradient(circle at 92% 4%,rgba(109,91,255,.14),transparent 24%),radial-gradient(circle at 8% 100%,rgba(15,213,239,.10),transparent 25%)!important}
+@media(max-width:700px){
+  .hotfoto-home .hf-mini{min-height:205px!important}
+  .hotfoto-home .hf-mini:nth-child(1) p{padding-bottom:54px!important}
+  .hotfoto-home .hf-mini:nth-child(2) p{padding-bottom:58px!important}
+  .hotfoto-home .hf-big-number{font-size:28px!important}
+}
