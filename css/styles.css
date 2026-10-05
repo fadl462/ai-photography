@@ -465,3 +465,133 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
   .hotfoto-home .hf-section-intro{grid-template-columns:1fr;grid-template-areas:"kicker" "title" "copy";gap:0}
   .hotfoto-home .hf-section-intro p{padding:0;margin-top:20px}
 }
+
+
+/* HotFoto V16 — remove artificial whitespace and lock homepage geometry */
+.hotfoto-home main{display:block!important}
+.hotfoto-home .hf-hero{
+  min-height:0!important;
+  height:auto!important;
+  padding:58px 6.8% 58px!important;
+  align-items:start!important;
+}
+.hotfoto-home .hf-hero-copy{
+  align-self:start!important;
+  padding-top:54px!important;
+}
+.hotfoto-home .hf-hero-stage{
+  height:500px!important;
+  align-self:start!important;
+}
+.hotfoto-home .hf-photo-main{top:4%!important}
+.hotfoto-home .hf-frame.frame-left{top:20%!important}
+.hotfoto-home .hf-frame.frame-right{bottom:10%!important}
+.hotfoto-home .hf-note.note-style{top:10%!important}
+.hotfoto-home .hf-note.note-ai{bottom:7%!important}
+.hotfoto-home .hf-proof,
+.hotfoto-home .hf-intelligence{
+  padding-top:78px!important;
+  padding-bottom:82px!important;
+}
+.hotfoto-home .hf-section-intro{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.18fr) minmax(280px,.72fr)!important;
+  grid-template-rows:auto auto!important;
+  grid-template-areas:"kicker copy" "title copy"!important;
+  align-items:end!important;
+  column-gap:7%!important;
+  row-gap:0!important;
+  margin:0 0 42px!important;
+}
+.hotfoto-home .hf-section-intro>.hf-kicker{grid-area:kicker!important;align-self:end!important}
+.hotfoto-home .hf-section-intro>h2{grid-area:title!important;align-self:start!important;margin:14px 0 0!important}
+.hotfoto-home .hf-section-intro>p{grid-area:copy!important;align-self:end!important;margin:0!important;padding:0 0 4px!important}
+.hotfoto-home .hf-proof-grid{margin-top:0!important}
+.hotfoto-home .hf-stats{padding-top:24px!important;padding-bottom:24px!important}
+.hotfoto-home .hf-workflow-banner{padding-top:88px!important;padding-bottom:88px!important}
+.hotfoto-home .hf-final{padding-top:92px!important;padding-bottom:92px!important}
+/* Prevent legacy decorative layers from creating visual or layout space. */
+.hotfoto-home .hero-orbit,.hotfoto-home .orbit-a,.hotfoto-home .orbit-b,
+.hotfoto-home .scribble,.hotfoto-home .squiggle,.hotfoto-home .wave-decoration,
+.hotfoto-home .theme-panel,.hotfoto-home .theme-scrim,.hotfoto-home .theme-trigger{display:none!important}
+@media(max-width:1000px){
+  .hotfoto-home .hf-hero{padding:48px 6% 34px!important}
+  .hotfoto-home .hf-hero-copy{padding-top:18px!important}
+  .hotfoto-home .hf-hero-stage{height:560px!important}
+}
+@media(max-width:700px){
+  .hotfoto-home .hf-hero{padding:38px 6% 26px!important}
+  .hotfoto-home .hf-hero-copy{padding-top:8px!important}
+  .hotfoto-home .hf-hero-stage{height:500px!important}
+  .hotfoto-home .hf-proof,.hotfoto-home .hf-intelligence{padding-top:58px!important;padding-bottom:62px!important}
+  .hotfoto-home .hf-section-intro{display:grid!important;grid-template-columns:1fr!important;grid-template-rows:auto!important;grid-template-areas:"kicker" "title" "copy"!important;gap:0!important;margin-bottom:32px!important}
+  .hotfoto-home .hf-section-intro>.hf-kicker{margin-bottom:0!important}
+  .hotfoto-home .hf-section-intro>h2{margin-top:12px!important}
+  .hotfoto-home .hf-section-intro>p{margin-top:20px!important}
+}
+
+/* HotFoto V17 — eliminate marked whitespace on homepage */
+.hotfoto-home .hf-hero{
+  min-height:0!important;
+  height:auto!important;
+  padding:24px 6.8% 34px!important;
+  align-items:start!important;
+}
+.hotfoto-home .hf-hero-copy{
+  padding-top:12px!important;
+  align-self:start!important;
+}
+.hotfoto-home .hf-hero-stage{
+  height:440px!important;
+  align-self:start!important;
+}
+.hotfoto-home .hf-photo-main{top:2%!important}
+.hotfoto-home .hf-frame.frame-left{top:16%!important}
+.hotfoto-home .hf-frame.frame-right{bottom:7%!important}
+.hotfoto-home .hf-note.note-style{top:7%!important}
+.hotfoto-home .hf-note.note-ai{bottom:4%!important}
+.hotfoto-home .hf-scroll{display:none!important}
+
+.hotfoto-home .hf-proof{
+  padding-top:58px!important;
+  padding-bottom:58px!important;
+}
+.hotfoto-home .hf-proof .hf-section-intro{
+  margin-bottom:28px!important;
+}
+.hotfoto-home .hf-proof-grid{margin-top:0!important}
+
+.hotfoto-home .hf-stats{
+  padding-top:18px!important;
+  padding-bottom:18px!important;
+}
+
+.hotfoto-home .hf-intelligence{
+  padding-top:58px!important;
+  padding-bottom:64px!important;
+}
+.hotfoto-home .hf-intelligence .hf-section-intro{
+  margin-bottom:28px!important;
+}
+
+.hotfoto-home .hf-workflow-banner{
+  padding-top:68px!important;
+  padding-bottom:68px!important;
+}
+.hotfoto-home .hf-final{
+  padding-top:68px!important;
+  padding-bottom:68px!important;
+}
+
+@media(max-width:1000px){
+  .hotfoto-home .hf-hero{padding:28px 6% 30px!important}
+  .hotfoto-home .hf-hero-copy{padding-top:8px!important}
+  .hotfoto-home .hf-hero-stage{height:460px!important}
+}
+@media(max-width:700px){
+  .hotfoto-home .hf-hero{padding:24px 6% 24px!important}
+  .hotfoto-home .hf-hero-copy{padding-top:0!important}
+  .hotfoto-home .hf-hero-stage{height:420px!important}
+  .hotfoto-home .hf-proof,.hotfoto-home .hf-intelligence{padding-top:48px!important;padding-bottom:52px!important}
+  .hotfoto-home .hf-workflow-banner,.hotfoto-home .hf-final{padding-top:56px!important;padding-bottom:56px!important}
+}
