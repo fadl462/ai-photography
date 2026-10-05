@@ -407,3 +407,61 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
 
 /* HotFoto V14 homepage precision pass */
 @media(min-width:1001px){.hotfoto-home .hf-hero{min-height:650px;padding-top:48px;padding-bottom:52px}.hotfoto-home .hf-hero-stage{height:535px}.hotfoto-home .hf-photo-main{top:7%}.hotfoto-home .hf-note.note-style{top:14%}.hotfoto-home .hf-proof,.hotfoto-home .hf-intelligence{padding-top:96px;padding-bottom:96px}}
+
+/* HotFoto V15 — homepage precision / alignment cleanup */
+.hotfoto-home .hf-hero{
+  min-height:590px;
+  padding:34px 6.8% 42px;
+  grid-template-columns:.9fr 1.1fr;
+  gap:1.5%;
+}
+.hotfoto-home .hf-hero-stage{height:490px}
+.hotfoto-home .hf-photo-main{top:5%;width:min(450px,66%)}
+.hotfoto-home .hf-frame.frame-left{top:22%}
+.hotfoto-home .hf-frame.frame-right{bottom:13%}
+.hotfoto-home .hf-note.note-style{top:12%}
+.hotfoto-home .hf-note.note-ai{bottom:9%}
+
+/* Section headings: kicker + headline stay together; body copy stays opposite. */
+.hotfoto-home .hf-section-intro{
+  grid-template-columns:minmax(0,1.15fr) minmax(260px,.72fr);
+  grid-template-areas:"kicker copy" "title copy";
+  column-gap:7%;
+  row-gap:0;
+  align-items:end;
+}
+.hotfoto-home .hf-section-intro>.hf-kicker{grid-area:kicker}
+.hotfoto-home .hf-section-intro>h2{grid-area:title}
+.hotfoto-home .hf-section-intro>p{grid-area:copy}
+.hotfoto-home .hf-section-intro h2{max-width:900px}
+.hotfoto-home .hf-section-intro p{align-self:end;padding-bottom:5px}
+
+/* Keep the proof composition balanced instead of pushing the headline into the right column. */
+.hotfoto-home .hf-proof-grid{margin-top:8px}
+.hotfoto-home .hf-proof .hf-section-intro{margin-bottom:48px}
+.hotfoto-home .hf-intelligence .hf-section-intro{margin-bottom:46px}
+
+/* Remove accidental visual artifacts from legacy theme/decorative systems. */
+.hotfoto-home .theme-panel,
+.hotfoto-home .theme-scrim,
+.hotfoto-home [data-theme-toggle],
+.hotfoto-home [data-theme-panel],
+.hotfoto-home .theme-trigger{display:none!important}
+.hotfoto-home svg:not(.logo-svg),
+.hotfoto-home canvas[data-decoration],
+.hotfoto-home .scribble,
+.hotfoto-home .squiggle,
+.hotfoto-home .wave-decoration{display:none!important}
+
+/* Cleaner vertical rhythm on the proof/stat transition. */
+.hotfoto-home .hf-proof{padding-bottom:82px}
+.hotfoto-home .hf-stats{padding-top:24px;padding-bottom:24px}
+.hotfoto-home .hf-intelligence{padding-top:92px}
+
+@media(max-width:700px){
+  .hotfoto-home .hf-hero{min-height:auto;padding:46px 6% 24px;grid-template-columns:1fr}
+  .hotfoto-home .hf-hero-stage{height:485px}
+  .hotfoto-home .hf-photo-main{width:70%;right:8%;top:6%}
+  .hotfoto-home .hf-section-intro{grid-template-columns:1fr;grid-template-areas:"kicker" "title" "copy";gap:0}
+  .hotfoto-home .hf-section-intro p{padding:0;margin-top:20px}
+}
