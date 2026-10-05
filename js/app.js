@@ -66,3 +66,32 @@ const savedTheme=localStorage.getItem('fadl-theme')||'obsidian';setTheme(savedTh
 const savedAccent=localStorage.getItem('fadl-accent');if(savedAccent&&accentPicker){accentPicker.value=savedAccent;document.documentElement.style.setProperty('--accent',savedAccent);const n=savedAccent.slice(1);document.documentElement.style.setProperty('--accent-rgb',`${parseInt(n.slice(0,2),16)},${parseInt(n.slice(2,4),16)},${parseInt(n.slice(4,6),16)}`)}
 if(glowRange&&localStorage.getItem('fadl-glow')){glowRange.value=localStorage.getItem('fadl-glow');document.documentElement.style.setProperty('--glow-strength',(glowRange.value/100).toFixed(2))}
 if(motionRange&&localStorage.getItem('fadl-motion')){motionRange.value=localStorage.getItem('fadl-motion');document.documentElement.style.setProperty('--motion-scale',(motionRange.value/70).toFixed(2))}
+
+
+// FADL VISUAL FEEL ENGINE
+const feelButtons=document.querySelectorAll('.feel-option');
+const feelNames={cinematic:'Cinematic',editorial:'Editorial',electric:'Electric',minimal:'Minimal'};
+function setFeel(feel,persist=true){
+  document.body.dataset.feel=feel;
+  feelButtons.forEach(b=>{const active=b.dataset.feel===feel;b.classList.toggle('active',active);b.setAttribute('aria-checked',String(active))});
+  if(persist)localStorage.setItem('fadl-feel',feel);
+}
+feelButtons.forEach(b=>b.addEventListener('click',()=>setFeel(b.dataset.feel)));
+setFeel(localStorage.getItem('fadl-feel')||'cinematic',false);
+
+// Keep the cursor atmosphere alive across the page, while remaining disabled on touch devices.
+document.addEventListener('pointermove',e=>{
+  if(window.matchMedia('(pointer:coarse)').matches)return;
+  document.documentElement.style.setProperty('--mx',`${e.clientX/window.innerWidth*100}%`);
+  document.documentElement.style.setProperty('--my',`${e.clientY/window.innerHeight*100}%`);
+});
+
+// Give showcase cards a subtle depth response without a heavy 3D effect.
+document.querySelectorAll('.showcase-card,.feature,.module-grid>div').forEach(card=>{
+  card.addEventListener('pointermove',e=>{
+    if(window.matchMedia('(pointer:coarse)').matches)return;
+    const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`perspective(900px) rotateX(${(-y*2.5).toFixed(2)}deg) rotateY(${(x*2.5).toFixed(2)}deg) translateY(-5px)`;
+  });
+  card.addEventListener('pointerleave',()=>{card.style.transform='';});
+});
