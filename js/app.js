@@ -95,3 +95,37 @@ document.querySelectorAll('.showcase-card,.feature,.module-grid>div').forEach(ca
   });
   card.addEventListener('pointerleave',()=>{card.style.transform='';});
 });
+
+// FADL SIGNATURE MOTION — suspended gallery depth + scroll choreography
+(function(){
+  const depthItems=document.querySelectorAll('[data-depth]');
+  if(!depthItems.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let ticking=false;
+  const updateDepth=()=>{
+    const y=window.scrollY;
+    depthItems.forEach(el=>{
+      const factor=parseFloat(el.dataset.depth||0);
+      const rect=el.getBoundingClientRect();
+      const offset=((window.innerHeight*.5)- (rect.top+rect.height*.5))*factor*.045;
+      el.style.setProperty('--depth-y',`${offset.toFixed(2)}px`);
+    });
+    ticking=false;
+  };
+  window.addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(updateDepth);ticking=true}},{passive:true});
+  updateDepth();
+
+  // Cursor gravity: suspended objects subtly lean toward the pointer, like real hanging prints.
+  document.addEventListener('pointermove',e=>{
+    if(window.matchMedia('(pointer:coarse)').matches) return;
+    document.querySelectorAll('.hanging-object').forEach((el,i)=>{
+      const r=el.getBoundingClientRect();
+      if(r.width===0) return;
+      const dx=(e.clientX-(r.left+r.width/2))/window.innerWidth;
+      const dy=(e.clientY-(r.top+r.height/2))/window.innerHeight;
+      const lean=Math.max(-3,Math.min(3,dx*7));
+      el.style.setProperty('--cursor-lean',`${lean.toFixed(2)}deg`);
+      el.style.setProperty('--cursor-y',`${(dy*3).toFixed(2)}px`);
+      el.style.rotate=`calc(var(--cursor-lean,0deg) + var(--tilt,0deg))`;
+    });
+  },{passive:true});
+})();

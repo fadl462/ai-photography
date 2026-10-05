@@ -164,3 +164,52 @@ body[data-feel="cinematic"] .hero-image,body[data-feel="cinematic"] .showcase-im
 body[data-feel="electric"] .hero-image,body[data-feel="electric"] .showcase-image{filter:saturate(1.05) contrast(1.10)}
 body[data-feel="minimal"] .hero-image,body[data-feel="minimal"] .showcase-image{filter:saturate(.76) contrast(1.01)}
 @media(max-width:800px){.nav{height:74px}.hero{padding-top:56px}.hero h1{font-size:clamp(52px,15vw,82px)}}
+
+/* =========================================================
+   FADL AI — SUSPENDED GALLERY / SIGNATURE MOTION SYSTEM
+   The page behaves like a hanging photographic exhibition.
+   ========================================================= */
+:root{--hang-shadow:0 28px 70px rgba(24,20,15,.18);--thread:rgba(65,55,44,.28);--paper:#f7f2e9}
+.hanging-gallery{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:4}
+.hanging-object{position:absolute;transform-origin:50% -28px;will-change:transform;filter:drop-shadow(0 22px 28px rgba(25,20,14,.13));animation:hang-sway 7s ease-in-out infinite;}
+.hanging-object .thread{position:absolute;left:50%;top:-110px;width:1px;height:112px;background:linear-gradient(var(--thread),rgba(65,55,44,.06));}
+.hanging-object .pin{position:absolute;left:50%;top:-5px;width:9px;height:9px;margin-left:-4px;border-radius:50%;background:#171614;border:2px solid #c7ae82;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.hanging-object .card{position:relative;width:146px;height:184px;padding:8px;background:var(--paper);border:1px solid rgba(37,31,25,.14);box-shadow:var(--hang-shadow);transform:rotate(var(--tilt));}
+.hanging-object .photo{height:126px;position:relative;overflow:hidden;background:linear-gradient(145deg,#d7b78b,#806b55 45%,#242621);}
+.hanging-object .photo:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 68% 25%,rgba(255,225,173,.82),transparent 19%),linear-gradient(150deg,transparent 42%,rgba(15,17,15,.75) 43% 100%)}
+.hanging-object .photo:after{content:"";position:absolute;width:45%;height:65%;left:28%;bottom:-10%;background:#151716;border-radius:48% 48% 10% 10%;box-shadow:0 -42px 0 -12px #171817;}
+.hanging-object .caption{padding:9px 3px 1px;display:flex;justify-content:space-between;align-items:end;color:#3c372f}
+.hanging-object .caption b{font:600 12px var(--display);letter-spacing:-.02em}.hanging-object .caption span{font-size:7px;letter-spacing:.12em;color:#8c8171}
+.hanging-object .stamp{position:absolute;right:12px;top:112px;font-size:7px;letter-spacing:.16em;color:#d8c09a;mix-blend-mode:screen}
+.hanging-object.one{left:-8%;top:120px;--tilt:-7deg;animation-delay:-1s}.hanging-object.two{right:-6%;top:250px;--tilt:6deg;animation-duration:8.5s;animation-delay:-4s}.hanging-object.three{left:7%;top:54%;--tilt:4deg;animation-duration:9s;animation-delay:-2s}
+.hanging-object.two .card{width:122px;height:158px}.hanging-object.two .photo{height:106px}.hanging-object.three .card{width:108px;height:140px}.hanging-object.three .photo{height:91px}
+@keyframes hang-sway{0%,100%{rotate:0deg;translate:0 0}25%{rotate:1.7deg;translate:2px 1px}50%{rotate:-1.4deg;translate:-1px 2px}75%{rotate:.8deg;translate:1px 0}}
+.hero .hanging-gallery{z-index:5}
+.hero-visual:before{content:"";position:absolute;width:560px;height:560px;border-radius:50%;border:1px solid rgba(185,154,103,.11);background:radial-gradient(circle,rgba(185,154,103,.07),transparent 64%);animation:gallery-breathe 8s ease-in-out infinite}
+@keyframes gallery-breathe{50%{scale:1.035;opacity:.75}}
+
+/* Floating annotation cards — like physical notes suspended around a print */
+.suspended-note{position:absolute;z-index:7;background:rgba(248,245,239,.91);border:1px solid rgba(53,44,34,.14);backdrop-filter:blur(18px);box-shadow:0 20px 55px rgba(32,26,19,.13);padding:12px 14px;min-width:156px;transform-origin:50% -18px;animation:note-float 6s ease-in-out infinite;pointer-events:none}
+.suspended-note:before{content:"";position:absolute;left:50%;top:-26px;width:1px;height:27px;background:rgba(65,55,44,.3)}
+.suspended-note:after{content:"";position:absolute;left:50%;top:-30px;width:7px;height:7px;margin-left:-3px;border-radius:50%;background:#b99a67;box-shadow:0 1px 5px rgba(0,0,0,.2)}
+.suspended-note small{display:block;font-size:7px;letter-spacing:.18em;color:#92764d;margin-bottom:6px}.suspended-note strong{font:600 13px var(--display);letter-spacing:-.02em}.suspended-note span{display:block;font-size:8px;color:#7c756b;margin-top:4px}
+.note-style{right:4%;top:9%;transform:rotate(3deg);animation-delay:-2s}.note-ai{left:3%;bottom:14%;transform:rotate(-4deg);animation-duration:7.5s}
+@keyframes note-float{0%,100%{translate:0 0;rotate:0deg}50%{translate:0 8px;rotate:1.5deg}}
+
+/* Make the major visual cards feel physically suspended rather than boxed into a grid. */
+.visual-showcase{position:relative;overflow:visible}
+.visual-showcase .showcase-card{transform-origin:center top;transition:transform .55s cubic-bezier(.2,.8,.2,1),box-shadow .55s}
+.visual-showcase .showcase-card:nth-child(1){margin-top:18px;rotate:-1.2deg}.visual-showcase .showcase-card:nth-child(2){margin-top:-12px;rotate:1.4deg}.visual-showcase .showcase-card:nth-child(3){margin-top:30px;rotate:-.7deg}
+.visual-showcase .showcase-card:before{content:"";position:absolute;left:50%;top:-54px;width:1px;height:55px;background:linear-gradient(rgba(65,55,44,.28),rgba(65,55,44,.03));z-index:5}.visual-showcase .showcase-card:after{content:"";position:absolute;left:calc(50% - 4px);top:-59px;width:8px;height:8px;border-radius:50%;background:#191816;border:2px solid #b99a67;z-index:6;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.visual-showcase .showcase-card:hover{rotate:0deg;translate:0 -10px;box-shadow:0 38px 85px rgba(43,36,28,.17)!important}
+
+/* Scroll-reactive exhibition depth */
+[data-depth]{--depth-y:0px;translate:0 var(--depth-y);transition:translate .15s linear}
+
+/* Elegant edge marks give the page a gallery/exhibition identity */
+.gallery-index{position:absolute;right:5.5%;top:52%;writing-mode:vertical-rl;display:flex;gap:9px;align-items:center;color:#a09078;font-size:8px;letter-spacing:.22em;z-index:3;opacity:.7}.gallery-index i{width:34px;height:1px;background:#b99a67;display:block}
+
+@media(max-width:1100px){.hanging-object.one{left:-15%}.hanging-object.two{right:-13%}.note-style{right:1%}.note-ai{left:1%}}
+@media(max-width:800px){.hanging-object{scale:.78}.hanging-object.one{left:-22%;top:95px}.hanging-object.two{right:-22%;top:300px}.hanging-object.three{left:-7%;top:64%}.suspended-note{scale:.82}.note-style{right:-8%;top:5%}.note-ai{left:-9%;bottom:7%}.gallery-index{display:none}.visual-showcase .showcase-card:nth-child(n){margin-top:20px;rotate:0deg}.visual-showcase .showcase-card:before,.visual-showcase .showcase-card:after{display:none}}
+@media(max-width:560px){.hanging-object{display:none}.suspended-note{display:none}.hero-visual:before{width:400px;height:400px}}
+@media(prefers-reduced-motion:reduce){.hanging-object,.suspended-note,.hero-visual:before{animation:none!important}[data-depth]{translate:none!important}.visual-showcase .showcase-card{rotate:0deg!important}}
