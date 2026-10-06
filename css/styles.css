@@ -995,3 +995,63 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
   .hotfoto-platform .pf-metrics{grid-template-columns:1fr;margin-top:38px}
   .hotfoto-platform .pf-metrics>div{min-height:140px}
 }
+
+
+/* V27 — INTELLIGENCE LAYER / cinematic premium art direction */
+.hotfoto-platform .pf-engines{
+  padding:128px clamp(24px,7vw,105px) 120px;
+  background:
+    radial-gradient(circle at 15% 15%,rgba(115,85,255,.16),transparent 26%),
+    radial-gradient(circle at 88% 28%,rgba(0,229,255,.12),transparent 25%),
+    linear-gradient(145deg,#06111e 0%,#091a2a 48%,#071522 100%);
+  color:#f5f9ff; overflow:hidden;
+}
+.hotfoto-platform .pf-engines:before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.28;
+  background-image:linear-gradient(rgba(130,170,205,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(130,170,205,.055) 1px,transparent 1px);
+  background-size:72px 72px;
+  mask-image:linear-gradient(to bottom,black,transparent 92%);
+}
+.hotfoto-platform .pf-engines:after{
+  content:"";position:absolute;width:560px;height:560px;right:-250px;top:-220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,229,255,.13),transparent 68%);filter:blur(8px);pointer-events:none;
+}
+.hotfoto-platform .pf-section-head{position:relative;z-index:2;grid-template-columns:1.15fr .5fr;gap:80px;align-items:end;margin-bottom:64px}
+.hotfoto-platform .pf-section-head .eyebrow{color:#69eaff;letter-spacing:.22em}
+.hotfoto-platform .pf-section-head h2{font-size:clamp(56px,6.8vw,94px);line-height:.86;letter-spacing:-.075em;margin:16px 0 0;color:#f5f8ff}
+.hotfoto-platform .pf-section-head h2 em{color:#a88cff}
+.hotfoto-platform .pf-section-head p{color:#91a8bf;font-size:14px;line-height:1.6;max-width:280px;margin:0 0 5px}
+.hotfoto-platform .pf-engine-grid{position:relative;z-index:2;grid-template-columns:1.18fr .82fr;gap:18px}
+.hotfoto-platform .pf-engine{
+  min-height:310px;padding:30px;border:1px solid rgba(143,177,210,.16);border-radius:26px;
+  background:linear-gradient(145deg,rgba(18,37,57,.92),rgba(8,22,36,.88));
+  box-shadow:0 20px 70px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.035);
+  color:#f3f7fb;transition:transform .45s cubic-bezier(.2,.8,.2,1),border-color .45s,box-shadow .45s;
+}
+.hotfoto-platform .pf-engine:before{right:-100px;top:-100px;width:250px;height:250px;background:radial-gradient(circle,rgba(0,229,255,.12),transparent 67%)}
+.hotfoto-platform .pf-engine:after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.45),rgba(115,85,255,.5),transparent);opacity:.65}
+.hotfoto-platform .pf-engine:hover{transform:translateY(-9px);border-color:rgba(102,234,255,.38);box-shadow:0 32px 90px rgba(0,0,0,.3),0 0 45px rgba(0,229,255,.06)}
+.hotfoto-platform .pf-engine-top{color:#7893ad}
+.hotfoto-platform .pf-engine-top b{background:linear-gradient(145deg,rgba(0,229,255,.12),rgba(115,85,255,.16));border-color:rgba(118,173,210,.2);color:#6cecff;box-shadow:0 0 24px rgba(0,229,255,.08)}
+.hotfoto-platform .pf-engine h3{font-size:31px;color:#f8fbff;margin-top:22px}
+.hotfoto-platform .pf-engine p{color:#91a7bb}
+.hotfoto-platform .pf-engine-director{min-height:430px;background:linear-gradient(145deg,#0c1d30,#071320 72%)}
+.hotfoto-platform .pf-console{left:30px;right:30px;bottom:30px;background:linear-gradient(145deg,#0a1727,#10263c);border:1px solid rgba(111,231,255,.16);box-shadow:0 22px 55px rgba(0,0,0,.34)}
+.hotfoto-platform .pf-console button{background:linear-gradient(90deg,#00dff4,#7355ff,#a55cff);color:#fff;box-shadow:0 8px 25px rgba(115,85,255,.24)}
+.hotfoto-platform .pf-engine-style{background:radial-gradient(circle at 88% 12%,rgba(115,85,255,.15),transparent 30%),linear-gradient(145deg,#10182d,#091522)}
+.hotfoto-platform .pf-dna-score strong{font-size:58px;color:#9e8cff;line-height:.9}
+.hotfoto-platform .pf-dna-bars{gap:11px;margin-top:20px}
+.hotfoto-platform .pf-dna-bars i{background:rgba(154,177,199,.15);height:5px;color:#7892aa;padding-top:9px}
+.hotfoto-platform .pf-dna-bars i:after{height:5px;background:linear-gradient(90deg,#00dff4,#7355ff,#ad72ff);box-shadow:0 0 12px rgba(115,85,255,.3)}
+.hotfoto-platform .pf-engine-cull{background:radial-gradient(circle at 85% 20%,rgba(0,229,255,.12),transparent 32%),linear-gradient(145deg,#0d2030,#081622)}
+.hotfoto-platform .pf-big-stat strong{color:#f6fbff;font-size:42px}.hotfoto-platform .pf-big-stat b{color:#63eaff;font-size:28px}
+.hotfoto-platform .pf-big-stat small{color:#7893aa}
+.hotfoto-platform .pf-slider i{background:rgba(151,177,201,.17)}.hotfoto-platform .pf-slider i b{background:linear-gradient(90deg,#00dff4,#a06cff);box-shadow:0 0 12px rgba(115,85,255,.35)}
+.hotfoto-platform .pf-chip-row{margin-top:25px}.hotfoto-platform .pf-chip-row b{background:rgba(255,255,255,.035);border-color:rgba(151,184,211,.18);color:#8ea7bd}
+.hotfoto-platform .pf-engine-wide{min-height:260px;background:linear-gradient(145deg,#0b1b2b,#081521)}
+.hotfoto-platform .pf-rescue-visual{background:linear-gradient(110deg,#394756,#b7d8e2 48%,#856ed8);box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.hotfoto-platform .pf-engine-quality{background:radial-gradient(circle at 78% 20%,rgba(0,229,255,.1),transparent 30%),linear-gradient(145deg,#101c2c,#091521)}
+.hotfoto-platform .pf-quality>strong{font-size:76px;color:#70eaff;text-shadow:0 0 30px rgba(0,229,255,.18)}
+.hotfoto-platform .pf-quality span{color:#6f8da7}.hotfoto-platform .pf-quality small{color:#86a0b6}
+@media(max-width:1000px){.hotfoto-platform .pf-section-head{grid-template-columns:1fr;gap:25px}.hotfoto-platform .pf-section-head p{max-width:500px}.hotfoto-platform .pf-engine-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.hotfoto-platform .pf-engines{padding-top:92px;padding-bottom:88px}.hotfoto-platform .pf-section-head{margin-bottom:42px}.hotfoto-platform .pf-section-head h2{font-size:clamp(48px,13vw,70px)}.hotfoto-platform .pf-engine{border-radius:21px;padding:23px}.hotfoto-platform .pf-engine-director{min-height:430px}.hotfoto-platform .pf-console{left:23px;right:23px;bottom:23px}.hotfoto-platform .pf-dna-score strong{font-size:50px}}
