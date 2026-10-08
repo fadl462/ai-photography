@@ -6,8 +6,9 @@
 <meta name="description" content="HotFoto AI Studio — autonomous photography production from upload to delivery.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=hotfoto40">
-<script defer src="js/app.js?v=hotfoto40"></script>
+<link rel="stylesheet" href="css/styles.css?v=hotfoto41">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script defer src="js/app.js?v=hotfoto41"></script>
 </head>
 <body class="hf-studio-body">
 <div class="noise"></div>
@@ -116,5 +117,26 @@
 <footer class="studio-footer"><div class="brand"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></div><p>AI photography production, from RAW to remarkable.</p><div><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a href="pricing.html">Pricing</a><a href="studio.html">Studio</a></div><small>© 2026 HotFoto AI · Prototype</small></footer>
 
 <div class="modal" id="loginModal"><div class="modal-backdrop"></div><div class="modal-card login-modal"><button class="modal-close">×</button><span class="brand-mark big">✦</span><span class="eyebrow">WELCOME BACK</span><h2>Enter your studio.</h2><p>Prototype access — no account required.</p><a class="btn primary full" href="studio.html">Continue to Studio →</a></div></div>
+
+<div class="hf-export-modal" id="exportModal" aria-hidden="true">
+  <div class="hf-export-backdrop" data-export-close></div>
+  <section class="hf-export-card" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+    <button class="hf-export-close" data-export-close aria-label="Close export">×</button>
+    <div class="hf-export-kicker"><span></span> DELIVERY ENGINE</div>
+    <h2 id="exportTitle">Export your photographs.</h2>
+    <p class="hf-export-intro">Choose exactly what you want to deliver, how you want it encoded and how large it should be.</p>
+    <div class="hf-export-grid">
+      <label><span>IMAGES</span><select id="exportScope"><option value="all">All processed images</option><option value="keepers">Keepers only</option><option value="selected">Current image only</option></select></label>
+      <label><span>FORMAT</span><select id="exportFormat"><option value="jpeg">JPEG</option><option value="png">PNG</option><option value="webp">WebP</option></select></label>
+      <label><span>SIZE</span><select id="exportSize"><option value="original">Original dimensions</option><option value="4000">Up to 4000 px</option><option value="3000">Up to 3000 px</option><option value="2000">Up to 2000 px</option><option value="1600">Up to 1600 px</option></select></label>
+      <label><span>QUALITY</span><select id="exportQuality"><option value="1">Maximum</option><option value="0.94">High — 94%</option><option value="0.88" selected>Professional — 88%</option><option value="0.78">Web — 78%</option></select></label>
+    </div>
+    <div class="hf-export-summary"><div><b id="exportCount">0 images</b><small id="exportSummaryText">No processed images selected.</small></div><label class="hf-export-zip"><input type="checkbox" id="exportZip" checked><span></span><b>Package as ZIP</b></label></div>
+    <div class="hf-export-presets"><span>QUICK DELIVERY</span><button data-preset="client">Client</button><button data-preset="web">Web</button><button data-preset="social">Social</button><button data-preset="print">Print</button></div>
+    <button class="hf-export-primary" id="confirmExport"><span>⇩</span> EXPORT DELIVERY <i>↗</i></button>
+    <small class="hf-export-note">Originals remain untouched. HotFoto exports processed delivery copies.</small>
+  </section>
+</div>
+
 </body>
 </html>
