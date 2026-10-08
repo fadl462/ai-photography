@@ -97,7 +97,7 @@ function setupArchitecture(){
  const root=document.querySelector('.os-architecture'); const readout=document.getElementById('archReadout'); if(!root||!readout)return;
  const core=document.getElementById('archCore');
  const show=(key)=>{const m=archMeta[key];if(!m)return; root.querySelectorAll('.arch-node').forEach(n=>n.classList.toggle('active',n.dataset.arch===key)); readout.innerHTML=`<span>${m[0]}</span><b>${m[1]}</b><p>${m[2]}</p>`;root.classList.add('arch-armed');};
- root.querySelectorAll('.arch-node').forEach(n=>{n.addEventListener('click',()=>show(n.dataset.arch));n.addEventListener('mouseenter',()=>show(n.dataset.arch));});
+ root.querySelectorAll('.arch-node').forEach(n=>{n.addEventListener('click',()=>show(n.dataset.arch));});
  core.addEventListener('click',()=>{root.querySelectorAll('.arch-node').forEach(n=>n.classList.remove('active'));readout.innerHTML='<span>HOTFOTO INTELLIGENCE CORE</span><b>One production loop.</b><p>Orchestrates the connected layers represented in this architecture map.</p>';});
  core.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();core.click();}});
 }
