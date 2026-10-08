@@ -1,24 +1,20 @@
-# HotFoto V49.1 — Photographer Comfort Patch
+# HotFoto V49.2 — Studio Cleanup
 
-## Purpose
-Removes engineering-facing Studio controls and adds a photographer-first AI Culling command centre.
+This patch removes the three internal controls shown in the Studio screenshot:
 
-### Changes
-- Hides HotFoto OS / Engine Map / AI Gateway / internal intelligence controls.
-- Adds Projects / Review Queue / Delivery quick actions.
-- Adds an AI Culling board with:
-  - Frames / Keepers counts
-  - Keepers / All Frames / Review filters
-  - Select Strongest action
-  - photographer-control reassurance
-- Uses the existing HotFoto filmstrip and culling results; no fake AI capability is introduced.
+- HOTFOTO OS
+- 50 ENGINE CAPABILITIES
+- AI GATEWAY
 
-## Installation
-1. Copy `js/photographer-comfort.js` into the site's `js/` folder.
-2. Copy `css/photographer-comfort.css` into the site's `css/` folder.
-3. In `studio.html`, after the existing `js/app.js` script, add:
-   `<link rel="stylesheet" href="css/photographer-comfort.css?v=49.1">`
-   and:
-   `<script defer src="js/photographer-comfort.js?v=49.1"></script>`
+It also removes the internal Engine Map / Intelligence controls and engineering modals from the photographer-facing experience.
 
-This is a drop-in patch because the GitHub integration currently has read-only access and cannot commit directly.
+## Install
+
+1. Upload `js/remove-internal-controls.js` to your site's `js/` folder.
+2. Upload `css/hotfoto-v49.2-cleanup.css` to your site's `css/` folder.
+3. In `studio.html`, immediately before `</head>`, add:
+
+<script defer src="js/remove-internal-controls.js?v=hotfoto492"></script>
+<link rel="stylesheet" href="css/hotfoto-v49.2-cleanup.css?v=hotfoto492">
+
+The patch is intentionally additive so it does not overwrite your existing Studio files.

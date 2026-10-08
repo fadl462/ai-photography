@@ -1,0 +1,29 @@
+/* HotFoto AI V49.2 — cleanup styling */
+.studio-top-metrics .engine-map-btn,
+.studio-top-metrics #engineMapBtn,
+.studio-top-metrics #gatewayBtn {
+  display: none !important;
+}
+
+.user-assurance {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.user-assurance > div {
+  flex: 1;
+}
+
+.user-assurance b {
+  display: block;
+}
+
+.user-assurance span {
+  display: block;
+  margin-top: 4px;
+}
+
+.studio-footer a[href="engine.html"] {
+  display: none !important;
+}
