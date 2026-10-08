@@ -4,7 +4,8 @@ import sharp from 'sharp';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, updateProject, createAsset } from './db.mjs';
+import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, updateProject, createAsset, getAsset, updateAssetMetadata } from './db.mjs';
+import { storageHealth, initiateMultipart, completeMultipart, abortMultipart, headObject } from './storage.mjs';
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -23,6 +24,7 @@ const STORAGE_PROVIDER = process.env.HOTFOTO_STORAGE_PROVIDER || 'local';
 const STORAGE_BUCKET = process.env.HOTFOTO_STORAGE_BUCKET || '';
 const STORAGE_ENDPOINT = process.env.HOTFOTO_STORAGE_ENDPOINT || '';
 const STORAGE_PUBLIC_BASE = process.env.HOTFOTO_STORAGE_PUBLIC_BASE || '';
+const MAX_UPLOAD_BYTES = Number(process.env.HOTFOTO_MAX_UPLOAD_BYTES || 25 * 1024 * 1024 * 1024);
 
 
 const authPath = path.join(AUTH_DIR, 'accounts.json');
@@ -321,6 +323,44 @@ async function processRequest(body) {
   };
 }
 
+
+async function initMultipart(body, userId) {
+  const projectId = String(body.projectId || '');
+  const name = String(body.name || 'untitled-file').slice(0, 180);
+  const size = Number(body.size || 0);
+  if (!projectId) throw new Error('PROJECT_ID_REQUIRED');
+  if (!Number.isFinite(size) || size <= 0 || size > MAX_UPLOAD_BYTES) throw new Error('UPLOAD_SIZE_NOT_ALLOWED');
+  const asset = await createAsset(userId, projectId, { name, mimeType: body.mimeType || 'application/octet-stream', bytes: size, metadata: { uploadStatus: 'initiated', uploadId: null } });
+  const key = `${userId}/${projectId}/${asset.id}-${name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+  try {
+    const upload = await initiateMultipart({ key, contentType: body.mimeType, size, metadata: { userId, projectId, assetId: asset.id } });
+    const saved = await updateAssetMetadata(userId, asset.id, { metadata: { ...(asset.metadata || {}), uploadStatus: 'uploading', uploadId: upload.uploadId, key: upload.key } });
+    return { ok: true, asset: { ...asset, ...saved, storageKey: upload.key }, upload };
+  } catch (err) {
+    await updateAssetMetadata(userId, asset.id, { metadata: { uploadStatus: 'failed', error: String(err.message || err).slice(0,300) } }).catch(()=>{});
+    throw err;
+  }
+}
+async function completeAssetUpload(body, userId) {
+  const asset = await getAsset(userId, body.assetId);
+  if (!asset) throw new Error('ASSET_NOT_FOUND');
+  const meta = asset.metadata || {};
+  const key = body.key || meta.key || asset.storageKey;
+  const uploadId = body.uploadId || meta.uploadId;
+  const result = await completeMultipart({ key, uploadId, parts: body.parts });
+  const head = await headObject({ key });
+  const updated = await updateAssetMetadata(userId, asset.id, { bytes: head.bytes || asset.bytes, metadata: { ...meta, uploadStatus: 'complete', completedAt: new Date().toISOString(), etag: head.etag || result.etag, contentType: head.contentType || asset.mimeType } });
+  return { ok: true, asset: { ...asset, ...updated, storageKey: key }, object: { ...result, ...head } };
+}
+async function abortAssetUpload(body, userId) {
+  const asset = await getAsset(userId, body.assetId);
+  if (!asset) throw new Error('ASSET_NOT_FOUND');
+  const meta = asset.metadata || {};
+  await abortMultipart({ key: body.key || meta.key || asset.storageKey, uploadId: body.uploadId || meta.uploadId });
+  const updated = await updateAssetMetadata(userId, asset.id, { metadata: { ...meta, uploadStatus: 'aborted', abortedAt: new Date().toISOString() } });
+  return { ok: true, asset: { ...asset, ...updated } };
+}
+
 async function deliver(body) {
   return {
     ok: true,
@@ -340,14 +380,15 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v47.8',
+        version: 'v47.9',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: Boolean(STORAGE_BUCKET), multiDeviceMemory: Boolean(process.env.DATABASE_URL) }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL) }
       });
     }
     if (req.method === 'GET' && url.pathname === '/health/db') return json(res, 200, await dbHealth());
+    if (req.method === 'GET' && url.pathname === '/health/storage') return json(res, 200, storageHealth());
     if (req.method === 'GET' && url.pathname === '/auth/me') { const session = await authenticate(req); return json(res, 200, { ok: true, user: { id: session.userId, email: session.email }, expiresAt: new Date(Number(session.expiresAt)).toISOString() }); }
     if (req.method === 'GET' && url.pathname === '/projects') return json(res, 200, await projectList((await authenticate(req)).userId));
     if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
@@ -360,6 +401,9 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/projects/create') return json(res, 201, await projectCreate(body, session.userId));
     if (url.pathname === '/projects/update') return json(res, 200, await projectUpdate(body, session.userId));
     if (url.pathname === '/projects/assets') return json(res, 201, await projectAsset(body, session.userId));
+    if (url.pathname === '/assets/multipart/init') return json(res, 201, await initMultipart(body, session.userId));
+    if (url.pathname === '/assets/multipart/complete') return json(res, 200, await completeAssetUpload(body, session.userId));
+    if (url.pathname === '/assets/multipart/abort') return json(res, 200, await abortAssetUpload(body, session.userId));
     if (url.pathname === '/plan') return json(res, 200, await plan(body));
     if (url.pathname === '/analyze') return json(res, 200, await analyze(body));
     if (url.pathname === '/quality') return json(res, 200, await quality(body));

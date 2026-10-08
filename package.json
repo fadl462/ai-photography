@@ -1,6 +1,6 @@
 {
   "name": "hotfoto-ai-gateway",
-  "version": "47.8.0",
+  "version": "47.9.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "sharp": "^0.34.3",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "@aws-sdk/client-s3": "^3.901.0",
+    "@aws-sdk/s3-request-presigner": "^3.901.0"
   }
 }

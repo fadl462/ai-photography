@@ -126,3 +126,32 @@ export async function createAsset(userId, projectId, asset) {
   const own=await p.query('select 1 from hotfoto_projects where id=$1 and user_id=$2',[projectId,userId]); if(!own.rowCount) throw new Error('PROJECT_NOT_FOUND');
   const key=`${userId}/${projectId}/${id}-${asset.name}`; await p.query('insert into hotfoto_assets(id,project_id,user_id,name,storage_key,mime_type,bytes,metadata) values($1,$2,$3,$4,$5,$6,$7,$8)',[id,projectId,userId,asset.name,key,asset.mimeType||null,asset.bytes||null,asset.metadata||{}]); return {id,projectId,userId,name:asset.name,storageKey:key};
 }
+
+export async function getAsset(userId, assetId) {
+  const p = await getPool();
+  if (!p) {
+    const projects = await read(`projects-${userId}.json`, []);
+    const foundProject = projects.find(x => x.id === assetId);
+    const list = await read(`assets-${foundProject?.id || 'unknown'}.json`, []);
+    return list.find(x => x.id === assetId && x.userId === userId) || null;
+  }
+  const r = await p.query(`select id, project_id as "projectId", user_id as "userId", name, storage_key as "storageKey", mime_type as "mimeType", bytes, metadata from hotfoto_assets where id=$1 and user_id=$2`, [assetId, userId]);
+  return r.rows[0] || null;
+}
+
+export async function updateAssetMetadata(userId, assetId, patch = {}) {
+  const p = await getPool();
+  if (!p) {
+    const projects = await read(`projects-${userId}.json`, []);
+    const projectIds = projects.map(x => x.id);
+    for (const projectId of projectIds) {
+      const list = await read(`assets-${projectId}.json`, []);
+      const i = list.findIndex(x => x.id === assetId && x.userId === userId);
+      if (i >= 0) { list[i] = { ...list[i], ...patch }; await write(`assets-${projectId}.json`, list); return list[i]; }
+    }
+    throw new Error('ASSET_NOT_FOUND');
+  }
+  const r = await p.query(`update hotfoto_assets set bytes=coalesce($3,bytes), metadata=coalesce($4,metadata) where id=$1 and user_id=$2 returning id, project_id as "projectId", storage_key as "storageKey", bytes, metadata`, [assetId,userId,patch.bytes ?? null,patch.metadata ?? null]);
+  if (!r.rowCount) throw new Error('ASSET_NOT_FOUND');
+  return r.rows[0];
+}
