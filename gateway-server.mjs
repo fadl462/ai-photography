@@ -108,6 +108,32 @@ function albumLayout(assets, format='gallery') {
   for(let i=1;i<imgs.length;i+=3){ const chunk=imgs.slice(i,i+3); pages.push({page:page++,layout:chunk.length===1?'hero':chunk.length===2?'split':'triptych',assetIds:chunk.map(x=>x.assetId),headline:chunk.length===1?'Hero moment':chunk.length===2?'The story continues':'Story sequence'}); }
   return {format,theme:'cinematic-editorial',title:'AI Curated Story',coverAssetId:imgs[0]?.assetId||null,assets:imgs,pages,designRules:{keepFacesLarge:true,avoidAdjacentDuplicates:true,visualRhythm:'hero → detail → context',maxImagesPerSpread:3}};
 }
+
+async function socialPlan(body,userId){
+  const projectId=String(body.projectId||'');
+  const assets=await listProjectAssets(userId,projectId);
+  const selected=Array.isArray(body.assetIds)&&body.assetIds.length?assets.filter(a=>body.assetIds.includes(a.id)):assets;
+  const platform=String(body.platform||'instagram');
+  const count=Math.max(1,Math.min(Number(body.count)||5,10));
+  let story={enabled:false,reason:'DETERMINISTIC_SOCIAL_PLAN'};
+  let ordered=selected;
+  try { story=await storyIntelligence(selected,'social'); if(story.enabled&&Array.isArray(story.rankedAssetIds)){ const byId=new Map(selected.map(a=>[a.id,a])); ordered=story.rankedAssetIds.map(id=>byId.get(id)).filter(Boolean); } } catch(e){ story={enabled:false,reason:'MODEL_ERROR'}; }
+  ordered=ordered.slice(0,count);
+  const specs={instagram:{label:'Instagram',ratio:'4:5',captionLimit:2200},facebook:{label:'Facebook',ratio:'4:5',captionLimit:63206},linkedin:{label:'LinkedIn',ratio:'4:5',captionLimit:3000},x:{label:'X',ratio:'16:9',captionLimit:280}};
+  const spec=specs[platform]||specs.instagram;
+  let copy={caption:'',hook:'',hashtags:[],altText:[]};
+  if(OPENAI_API_KEY && ordered.length){
+    const content=[{type:'input_text',text:`${systemRules}\nYou are HotFoto Social Studio. Create premium photographer-grade social copy for ${spec.label}. Never claim facts not visible. Return JSON only: hook (short), caption (max ${spec.captionLimit} chars), hashtags (array max 10), altText (array matching the image count, concise descriptive accessibility text). Tone: cinematic, confident, human, not salesy or generic.`}];
+    for(const a of ordered){ try{ if(!a.storageKey) continue; const d=await signedDownload({key:a.storageKey,expiresIn:600}); if(d?.url) content.push({type:'input_text',text:`Asset ID: ${a.id} · ${a.name||'photograph'}`},{type:'input_image',image_url:d.url,detail:'low'}); }catch{} }
+    try { const r=await openAIResponses({model:VISION_MODEL,input:[{role:'user',content}],maxOutputTokens:1000}); const parsed=parseJson(extractText(r)); if(parsed) copy={hook:String(parsed.hook||''),caption:String(parsed.caption||''),hashtags:Array.isArray(parsed.hashtags)?parsed.hashtags.slice(0,10):[],altText:Array.isArray(parsed.altText)?parsed.altText.slice(0,ordered.length):[]}; } catch(e) { copy={caption:'',hook:'',hashtags:[],altText:[]}; }
+  }
+  if(!copy.caption) copy.caption=`A considered frame from the production — selected and sequenced by HotFoto AI.`;
+  if(!copy.hook) copy.hook=platform==='x'?'The frame that sets the tone.':'The frame that sets the tone.';
+  if(!copy.hashtags.length) copy.hashtags=['#HotFotoAI','#Photography','#VisualStorytelling'];
+  const posts=ordered.map((a,i)=>({assetId:a.id,name:a.name||`Frame ${i+1}`,role:story.roles?.[a.id]|| (i===0?'hero':'story'),ratio:spec.ratio,altText:copy.altText[i]||`Photograph from the ${projectId||'production'}.`}));
+  return {ok:true,projectId,platform,spec,storyIntelligence:story,posts,copy,createdAt:new Date().toISOString()};
+}
+
 async function albumPlan(body,userId){ const projectId=String(body.projectId||''); const assets=await listProjectAssets(userId,projectId); const selected=Array.isArray(body.assetIds)&&body.assetIds.length?assets.filter(a=>body.assetIds.includes(a.id)):assets; let story={enabled:false,reason:'DETERMINISTIC_LAYOUT'}; let ordered=selected; try { story=await storyIntelligence(selected,body.format||'gallery'); if(story.enabled&&Array.isArray(story.rankedAssetIds)){ const byId=new Map(selected.map(a=>[a.id,a])); ordered=story.rankedAssetIds.map(id=>byId.get(id)).filter(Boolean); } } catch(e){ story={enabled:false,reason:'MODEL_ERROR',error:String(e?.message||e).slice(0,180)}; } const plan=albumLayout(ordered,body.format||'gallery'); plan.storyIntelligence=story; return {ok:true,plan,projectId}; }
 async function albumCreate(body,userId){ const plan=body.plan||{}; const row=await createAlbum(userId,String(body.projectId||''),{title:body.title,format:body.format||'gallery',plan}); return {ok:true,album:row}; }
 async function albumList(body,userId){ return {ok:true,albums:await listAlbums(userId,String(body.projectId||''))}; }
@@ -452,11 +478,11 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v48.6',
+        version: 'v48.8',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true, finalization: true, deliveryIntelligence: true, clientFeedbackLearning: true, intelligentPackaging: true, packageProfiles: true, executionManifests: true, exportExecution: true, zipDelivery: true, signedPackageDownloads: true, albumDesigner: true, albumPlanning: true, galleryDesign: true, persistentAlbums: true, storyIntelligence: true, modelSequencing: true, narrativeBeats: true }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true, finalization: true, deliveryIntelligence: true, clientFeedbackLearning: true, intelligentPackaging: true, packageProfiles: true, executionManifests: true, exportExecution: true, zipDelivery: true, signedPackageDownloads: true, albumDesigner: true, albumPlanning: true, galleryDesign: true, persistentAlbums: true, storyIntelligence: true, modelSequencing: true, narrativeBeats: true, socialStudio: true, socialPlanning: true, aiCaptions: true, socialRatios: true }
       });
     }
     if (req.method === 'GET' && url.pathname === '/health/db') return json(res, 200, await dbHealth());
@@ -502,6 +528,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/process') return json(res, 200, await processRequest(body));
     if (url.pathname === '/delivery/execute') return json(res, 200, await executeDeliveryPackage(body, session.userId));
     if (url.pathname === '/album/plan') return json(res, 200, await albumPlan(body, session.userId));
+    if (url.pathname === '/social/plan') return json(res, 200, await socialPlan(body, session.userId));
     if (url.pathname === '/story/analyze') return json(res, 200, await storyIntelligence(await listProjectAssets(session.userId,String(body.projectId||'')),body.format||'gallery'));
     if (url.pathname === '/album/create') return json(res, 201, await albumCreate(body, session.userId));
     if (url.pathname === '/album/list') return json(res, 200, await albumList(body, session.userId));
