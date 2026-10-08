@@ -1,12 +1,5 @@
-# Fadl AI V9 — Multi-Page Photography Platform
+# HotFoto AI V29 — Workflow Repair
 
-Fadl AI is now structured as a real multi-page product experience.
+This package is root-ready for GitHub Pages. Replace the existing site files with these files.
 
-Pages:
-- index.html — Home / visual identity
-- platform.html — AI platform and modules
-- workflow.html — end-to-end photography workflow
-- studio.html — AI Studio
-- pricing.html — plans and conversion
-
-Shared CSS/JS keeps the visual engine, theme controls, interactions and navigation consistent across pages.
+Key fix: the Workflow page styling is restored and cache-busted with a new stylesheet version.
