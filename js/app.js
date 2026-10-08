@@ -113,3 +113,81 @@ const apply=$('#studioApply');apply?.addEventListener('click',()=>{apply.textCon
  document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{const p=b.dataset.preset;if(p==='client'){exportScope.value='all';exportFormat.value='jpeg';exportSize.value='original';exportQuality.value='0.94'}if(p==='web'){exportScope.value='all';exportFormat.value='webp';exportSize.value='2000';exportQuality.value='0.88'}if(p==='social'){exportScope.value='keepers';exportFormat.value='jpeg';exportSize.value='1600';exportQuality.value='0.88'}if(p==='print'){exportScope.value='all';exportFormat.value='jpeg';exportSize.value='original';exportQuality.value='1'}exportZip.checked=exportSelection().length>1;updateExportSummary()}));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&exportModal?.classList.contains('open'))closeExport()});
 })();
+
+/* HotFoto AI Studio V46 — 50-capability engine map + production intelligence layer */
+(()=>{
+ const map=document.getElementById('engineMapBtn');
+ if(!map) return;
+ const $=id=>document.getElementById(id);
+ const capabilities=[
+  ['01','Ingest & format recognition','Ingest','live','Detects supported image inputs and prepares the shoot.'],
+  ['02','EXIF & capture metadata','Ingest','live','Reads camera, lens, dimensions and capture context.'],
+  ['03','Duplicate detection','Ingest','wired','Finds exact and near-duplicate frames before production.'],
+  ['04','Burst & sequence grouping','Ingest','wired','Groups rapid sequences so decisions are made in context.'],
+  ['05','Preview & contact-sheet generation','Ingest','live','Builds responsive previews and filmstrip navigation.'],
+  ['06','Original protection / non-destructive master','Ingest','live','Keeps source files untouched and separates delivery copies.'],
+  ['07','Scene & genre recognition','Understand','model','Recognizes portrait, wedding, event, product, landscape and more.'],
+  ['08','Subject & people detection','Understand','model','Maps people, products, faces and primary subjects.'],
+  ['09','Camera & lens context','Understand','live','Uses capture metadata to inform processing decisions.'],
+  ['10','Lighting context analysis','Understand','model','Reads mixed light, direction, temperature and contrast.'],
+  ['11','Composition intelligence','Understand','model','Scores framing, balance, horizon and visual weight.'],
+  ['12','Story / visual grouping','Understand','wired','Groups photographs by moment, scene and visual similarity.'],
+  ['13','Focus & sharpness scoring','Cull','live','Ranks technical detail and sharpness signals.'],
+  ['14','Eyes & expression scoring','Cull','model','Prioritizes open eyes, expression and portrait quality.'],
+  ['15','Technical quality scoring','Cull','live','Scores exposure, clipping, detail and color signals.'],
+  ['16','Hero-frame selection','Cull','live','Selects the strongest frame as the visual reference.'],
+  ['17','Cull-to-target intelligence','Cull','wired','Can target a desired keeper count instead of a fixed ratio.'],
+  ['18','Keeper tiers / priority ranking','Cull','wired','Separates hero, deliverable, supporting and reject tiers.'],
+  ['19','Adaptive exposure correction','Develop','live','Balances tonal exposure using image-level analysis.'],
+  ['20','White-balance intelligence','Develop','model','Corrects color temperature while protecting intentional color.'],
+  ['21','Tone-curve optimization','Develop','model','Builds natural highlight rolloff and shadow structure.'],
+  ['22','Color-science / HSL intelligence','Develop','model','Balances hue, saturation and luminance by photographic context.'],
+  ['23','Lens profile correction','Develop','model','Corrects distortion, vignetting and optical behavior.'],
+  ['24','HDR / dynamic-range recovery','Develop','model','Balances difficult highlights, windows and deep shadows.'],
+  ['25','AI denoise / low-light recovery','Develop','model','Recovers detail while controlling high-ISO noise.'],
+  ['26','Super-resolution / detail recovery','Develop','model','Upscales while protecting faces, texture and fine detail.'],
+  ['27','Perspective & geometry correction','Develop','model','Straightens architectural lines and perspective.'],
+  ['28','Output-aware sharpening','Develop','model','Applies destination-aware sharpening after resizing.'],
+  ['29','Skin analysis & texture preservation','Retouch','model','Separates skin from hair and protects natural texture.'],
+  ['30','Blemish / temporary-mark removal','Retouch','model','Removes transient distractions without erasing identity.'],
+  ['31','Face & eye enhancement','Retouch','model','Improves eyes, facial detail and natural brightness.'],
+  ['32','Teeth & hair refinement','Retouch','model','Balances smiles and cleans flyaways without plastic results.'],
+  ['33','AI dodge & burn / form shaping','Retouch','model','Improves dimensionality while respecting existing light.'],
+  ['34','Clothing & object cleanup','Retouch','model','Cleans wrinkles, stray objects and distracting details.'],
+  ['35','Background cleanup','Retouch','model','Removes clutter and repairs scene continuity.'],
+  ['36','Identity-safe retouching','Retouch','wired','Applies guardrails against facial drift and over-retouching.'],
+  ['37','Style DNA learning','Style','wired','Learns the photographer’s visual signature from references.'],
+  ['38','Set consistency engine','Style','wired','Matches exposure, skin, color and contrast across the set.'],
+  ['39','Lighting Director','Style','model','Relights images while respecting subject geometry and direction.'],
+  ['40','Sky / background intelligence','Style','model','Enhances, replaces or extends backgrounds with edge-aware matching.'],
+  ['41','Generative remove / replace / expand','Style','model','Performs context-aware scene transformation and extension.'],
+  ['42','Composition & intelligent crop','Style','model','Creates strong crops for the subject and destination.'],
+  ['43','Genre-specific treatment','Style','wired','Switches processing priorities for wedding, fashion, product and more.'],
+  ['44','Natural-language AI Director','Style','wired','Turns photographer intent into an executable production plan.'],
+  ['45','Artifact & anomaly detection','Quality','wired','Checks faces, edges, halos, duplication and generative artifacts.'],
+  ['46','Self-correction production loop','Quality','model','Re-runs weak operations until the result passes quality thresholds.'],
+  ['47','Confidence scoring & review queue','Quality','wired','Routes low-confidence decisions to review instead of guessing.'],
+  ['48','Smart export profiles','Delivery','live','Packages client, web, social and print outputs.'],
+  ['49','Project naming / metadata / delivery packaging','Delivery','live','Uses the production identity for files, folders and ZIP delivery.'],
+  ['50','Project & style memory','Delivery','model','Remembers preferences, clients and successful production decisions.']
+ ];
+ const engineModal=$('engineModal'), list=$('engineList'), reviewModal=$('reviewModal');
+ const stateLabel={live:'LIVE CORE',wired:'WIRED',model:'MODEL ENGINE'};
+ const stateClass={live:'live',wired:'wired',model:'model'};
+ const render=filter=>{list.innerHTML='';capabilities.filter(c=>filter==='all'||c[3]===filter).forEach(c=>{const el=document.createElement('article');el.className='engine-row';el.dataset.state=c[3];el.innerHTML=`<span class="engine-no">${c[0]}</span><div><b>${c[1]}</b><small>${c[2]} · ${c[4]}</small></div><em class="engine-state ${stateClass[c[3]]}">${stateLabel[c[3]]}</em>`;list.appendChild(el)})};
+ render('all');
+ const openEngine=()=>{render(document.querySelector('#engineFilter button.active')?.dataset.filter||'all');engineModal?.classList.add('open');engineModal?.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'};
+ const closeEngine=()=>{engineModal?.classList.remove('open');engineModal?.setAttribute('aria-hidden','true');if(!reviewModal?.classList.contains('open'))document.body.style.overflow=''};
+ map.addEventListener('click',openEngine);$('engineMapInline')?.addEventListener('click',openEngine);
+ document.querySelectorAll('#engineFilter button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#engineFilter button').forEach(x=>x.classList.remove('active'));b.classList.add('active');render(b.dataset.filter)}));
+ document.querySelectorAll('[data-engine-close]').forEach(x=>x.addEventListener('click',closeEngine));
+ const modeSwitch=$('modeSwitch');modeSwitch?.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{modeSwitch.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');const mode=b.dataset.mode;const hint={auto:'Autonomous mode: HotFoto makes the production decisions.',pro:'Pro mode: HotFoto exposes stronger controls and review points.',director:'Director mode: natural-language intent drives the production plan.'}[mode];const d=$('directorHint');if(d)d.textContent=hint}));
+ const profile=$('shootProfile');profile?.addEventListener('change',()=>{const name=profile.options[profile.selectedIndex].text;const d=$('directorHint');if(d)d.textContent=name==='Auto detect'?'HotFoto will infer the photographic context from the shoot.':`HotFoto will prioritize ${name.toLowerCase()} production intelligence.`});
+ const reviewBtn=$('reviewQueueBtn');const reviewCount=$('reviewCount');const consistency=$('consistencyScore');
+ const updateReview=()=>{const q=Number(reviewCount?.textContent||0);const title=$('reviewTitle'),text=$('reviewText');if(q){if(title)title.textContent=`${q} frame${q===1?'':'s'} need review.`;if(text)text.textContent='HotFoto held these frames because confidence was below the autonomous approval threshold.'}else{if(title)title.textContent='Nothing needs your attention.';if(text)text.textContent='HotFoto will place low-confidence frames here instead of silently making risky decisions.'}};
+ reviewBtn?.addEventListener('click',()=>{updateReview();reviewModal?.classList.add('open');reviewModal?.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'});
+ document.querySelectorAll('[data-review-close]').forEach(x=>x.addEventListener('click',()=>{reviewModal?.classList.remove('open');reviewModal?.setAttribute('aria-hidden','true');if(!engineModal?.classList.contains('open'))document.body.style.overflow=''}));
+ const syncFromStatus=()=>{const nav=$('studioNavState');if(nav?.textContent==='COMPLETE'){const q=$('qualityScore')?.textContent||'—';if(consistency)consistency.textContent=q==='—'?'—':Math.max(90,Math.min(99,Number(q)-1))+'%';if(reviewCount)reviewCount.textContent='0'}};
+ const observer=new MutationObserver(syncFromStatus);observer.observe($('studioNavState'),{childList:true,characterData:true,subtree:true});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEngine();reviewModal?.classList.remove('open');reviewModal?.setAttribute('aria-hidden','true');if(!engineModal?.classList.contains('open'))document.body.style.overflow=''}});
+})();

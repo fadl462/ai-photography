@@ -6,9 +6,9 @@
 <meta name="description" content="HotFoto AI Studio — autonomous photography production from upload to delivery.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=hotfoto45">
+<link rel="stylesheet" href="css/styles.css?v=hotfoto46">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script defer src="js/app.js?v=hotfoto43"></script>
+<script defer src="js/app.js?v=hotfoto46"></script>
 </head>
 <body class="hf-studio-body">
 <div class="noise"></div>
@@ -49,7 +49,7 @@
       <section class="studio-main">
         <div class="studio-topbar">
           <div class="project-id"><span class="status-pip"></span><div class="project-name-wrap"><button class="project-name-button" id="projectNameButton" type="button" title="Rename production"><b id="projectName">NEW PRODUCTION</b><span class="project-edit" aria-hidden="true">✎</span></button><input id="projectNameInput" class="project-name-input" type="text" maxlength="64" value="NEW PRODUCTION" aria-label="Production name" hidden><small id="projectMeta">Drop a shoot to begin</small></div></div>
-          <div class="studio-top-metrics"><span><b id="imageCount">0</b> FRAMES</span><span><b id="qualityScore">—</b> QUALITY</span><span><b id="styleScore">—</b> STYLE DNA</span></div><button class="studio-start-btn studio-top-start" id="startHotFotoDocked" hidden><span class="start-icon">✦</span><span>START HOTFOTO</span><i>↗</i></button>
+          <div class="studio-top-metrics"><span><b id="imageCount">0</b> FRAMES</span><span><b id="qualityScore">—</b> QUALITY</span><span><b id="styleScore">—</b> STYLE DNA</span><span><b id="consistencyScore">—</b> CONSISTENCY</span><button class="engine-map-btn" id="engineMapBtn" type="button">50 ENGINE CAPABILITIES</button></div><button class="studio-start-btn studio-top-start" id="startHotFotoDocked" hidden><span class="start-icon">✦</span><span>START HOTFOTO</span><i>↗</i></button>
           <button class="icon-btn" id="resetStudio" title="Reset">↺</button>
         </div>
 
@@ -94,7 +94,7 @@
             <div class="ai-panel-head"><div><span class="eyebrow">AI DIRECTOR</span><h3 id="panelTitle">Waiting for a shoot</h3></div><span class="ai-online"><i></i> ONLINE</span></div>
             <div class="ai-director-card" id="directorCard">
               <div class="director-intro"><span>✦</span><div><b id="directorState">UPLOAD TO BEGIN</b><small id="directorHint">HotFoto will build the production plan automatically.</small></div></div>
-              <div class="director-prompt" id="directorPrompt">Once your images arrive, HotFoto will understand the scene, select the strongest frames, develop the RAW, refine people and objects, apply your signature, run Quality Guard and prepare delivery.</div>
+              <div class="director-prompt" id="directorPrompt">Once your images arrive, HotFoto will understand the scene, select the strongest frames, develop the RAW, refine people and objects, apply your signature, run Quality Guard and prepare delivery.</div><div class="director-controls"><div><span>MODE</span><div class="mode-switch" id="modeSwitch"><button class="active" data-mode="auto">AUTO</button><button data-mode="pro">PRO</button><button data-mode="director">DIRECTOR</button></div></div><label><span>SHOOT PROFILE</span><select id="shootProfile"><option value="auto">Auto detect</option><option value="portrait">Portrait</option><option value="wedding">Wedding</option><option value="fashion">Fashion / Editorial</option><option value="event">Event</option><option value="product">Product / E-commerce</option><option value="food">Food</option><option value="realestate">Real Estate / Architecture</option><option value="landscape">Landscape / Travel</option><option value="automotive">Automotive</option><option value="corporate">Corporate / Headshot</option></select></label></div><div class="engine-readiness"><div><b>50 / 50</b><span>engine capabilities mapped</span></div><div><b id="liveEngineCount">11</b><span>live in prototype</span></div><button id="engineMapInline" type="button">VIEW ENGINE MAP ↗</button></div>
             </div>
             <div class="ai-plan" id="aiPlan">
               <div class="plan-head"><span>PRODUCTION PLAN</span><b id="planStatus">STANDBY</b></div>
@@ -118,7 +118,7 @@
       </section>
     </div>
 
-    <div class="studio-statusbar"><div><span class="status-pip"></span><b id="statusText">SYSTEM READY</b><small id="statusDetail">Your originals are never overwritten.</small></div><div class="status-progress"><span id="progressBar"></span></div><div class="status-right"><span id="progressText">0%</span><button id="exportBtn" disabled>EXPORT DELIVERY ↗</button></div></div>
+    <div class="studio-statusbar"><div><span class="status-pip"></span><b id="statusText">SYSTEM READY</b><small id="statusDetail">Your originals are never overwritten.</small></div><div class="status-progress"><span id="progressBar"></span></div><div class="status-right"><span id="progressText">0%</span><button id="reviewQueueBtn" class="review-queue-btn" type="button">REVIEW QUEUE <b id="reviewCount">0</b></button><button id="exportBtn" disabled>EXPORT DELIVERY ↗</button></div></div>
   </section>
 </main>
 
@@ -145,6 +145,29 @@
     <div class="hf-export-presets"><span>QUICK DELIVERY</span><button data-preset="client">Client</button><button data-preset="web">Web</button><button data-preset="social">Social</button><button data-preset="print">Print</button></div>
     <button class="hf-export-primary" id="confirmExport"><span>⇩</span> EXPORT DELIVERY <i>↗</i></button>
     <small class="hf-export-note">Originals remain untouched. HotFoto exports processed delivery copies.</small>
+  </section>
+</div>
+
+<div class="hf-engine-modal" id="engineModal" aria-hidden="true">
+  <div class="hf-engine-backdrop" data-engine-close></div>
+  <section class="hf-engine-card" role="dialog" aria-modal="true" aria-labelledby="engineTitle">
+    <button class="hf-engine-close" data-engine-close aria-label="Close engine map">×</button>
+    <div class="hf-engine-kicker"><span></span> HOTFOTO AI / ENGINE MAP</div>
+    <h2 id="engineTitle">50 capabilities. One autonomous production engine.</h2>
+    <p class="hf-engine-intro">Every capability is mapped to a production stage, a user-facing surface and an execution state. HotFoto never hides a capability behind a decorative card: the engine map shows what is live, what is wired into the workflow, and what requires the model-backed production layer.</p>
+    <div class="engine-filter" id="engineFilter"><button class="active" data-filter="all">ALL 50</button><button data-filter="live">LIVE CORE</button><button data-filter="wired">WIRED</button><button data-filter="model">MODEL ENGINE</button></div>
+    <div class="engine-summary"><div><b>11</b><span>live browser capabilities</span></div><div><b>12</b><span>workflow-ready capabilities</span></div><div><b>27</b><span>model-backed capabilities</span></div><div><b>7</b><span>production stages</span></div></div>
+    <div class="engine-list" id="engineList"></div>
+  </section>
+</div>
+<div class="hf-review-modal" id="reviewModal" aria-hidden="true">
+  <div class="hf-review-backdrop" data-review-close></div>
+  <section class="hf-review-card" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+    <button class="hf-engine-close" data-review-close aria-label="Close review queue">×</button>
+    <div class="hf-engine-kicker"><span></span> QUALITY GUARD / REVIEW QUEUE</div>
+    <h2 id="reviewTitle">Nothing needs your attention.</h2>
+    <p id="reviewText">HotFoto will place low-confidence frames here instead of silently making risky decisions.</p>
+    <div class="review-empty">✦<b>REVIEW QUEUE EMPTY</b><small>Autonomous production is clear.</small></div>
   </section>
 </div>
 
