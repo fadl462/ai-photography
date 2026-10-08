@@ -27,22 +27,65 @@ const releases=[
 
 const stateLabel={live:'LIVE CORE',wired:'WIRED',model:'MODEL ENGINE',planned:'PLANNED'};
 const groups=['Ingest','Understand','Cull','Develop','Retouch','Style','Quality','Delivery','Platform'];
+const detailMeta={
+  'Style DNA learning': ['Learns a photographer’s recurring visual preferences from explicit feedback and approved work.','AI Director · Set consistency · Project memory','Preference learning / workflow intelligence','V47.4','Model-backed learning with stronger cross-project adaptation','Style DNA is a preference layer, not an absolute command.'],
+  'Natural-language AI Director': ['Turns photographic intent expressed in natural language into a bounded production plan.','Planner · Style DNA · Quality Guard','Model-backed orchestration','V47.5','Deeper agentic production planning','Never invents completion when a provider is unavailable.'],
+  'AI Story Intelligence': ['Ranks frames and builds narrative roles so galleries and albums have a deliberate visual progression.','Album Designer · Client Gallery · Campaign Studio','Vision + sequencing intelligence','V48.7','Learned narrative preferences across projects','Falls back to deterministic sequencing when model services are unavailable.'],
+  'AI Social Studio': ['Transforms selected photographic stories into platform-aware social content packages.','Story Intelligence · Campaign Studio','Model-backed content intelligence','V48.8','Performance-aware content optimization','Captions and hooks are generated only when the configured model is available.'],
+  'AI Campaign Studio': ['Builds multi-post creative arcs instead of treating every social post as an isolated asset.','Social Studio · Story Intelligence · Campaign Command Center','Model-backed campaign planning','V48.9','Adaptive campaign strategy','Campaign structure remains inspectable even without a model provider.'],
+  'AI Campaign Command Center / calendar': ['Turns campaign strategy into a concrete publishing sequence with cadence and timing visibility.','Campaign Studio · Social Studio','Workflow intelligence','V48.10','Execution and performance feedback','Planning is distinct from claiming a post was actually published.'],
+  'Campaign performance intelligence': ['Will learn from campaign outcomes and connect performance signals back to future creative decisions.','Campaign Command Center · Photographer Intelligence','Planned intelligence layer','V48.10 roadmap','Performance-informed recommendations','Planned; no fabricated analytics are shown.'],
+  'AI Campaign execution automation': ['Will coordinate approved campaign actions after human review and authorization.','Campaign Command Center · Delivery','Planned agentic automation','Roadmap','Human-approved execution agents','Planned; publishing credentials and permissions are intentionally not simulated.'],
+  'Project & style memory': ['Persists project context and photographer preferences so production decisions improve over time.','Style DNA · Feedback ledger · Projects','Persistent intelligence','V47.6','Richer cross-project memory','Memory is scoped to the photographer account.'],
+  'Self-correction production loop': ['Detects bounded quality problems and can recommend or apply a conservative correction pass.','Quality Guard · Image Worker','Model-backed quality intelligence','V47.4','Multi-pass confidence-aware correction','Generative edits are excluded from the automatic correction loop.'],
+  'Confidence scoring & review queue': ['Surfaces uncertain decisions for human review rather than hiding model ambiguity.','Cull · Quality Guard · AI Director','Workflow intelligence','V46','Confidence-aware review routing','Conservative confidence is preferred over invented certainty.']
+};
+const stagePurpose={Ingest:'Bring source photography into the system safely.',Understand:'Build photographic context before editing.',Cull:'Separate keepers from technical or narrative weak frames.',Develop:'Improve photographic quality while protecting intent.',Retouch:'Refine people, objects and surfaces without losing realism.',Style:'Apply creative direction and photographer identity.',Quality:'Catch errors and route uncertainty back into review.',Delivery:'Turn approved work into reproducible client-ready outputs.',Platform:'Provide the persistent account, cloud, collaboration and intelligence layer.'};
+const releaseByNum={1:'V46',2:'V46',3:'V46',4:'V46',5:'V46',6:'V46',7:'V47.1',8:'V47.1',9:'V47.1',10:'V47.1',11:'V47.1',12:'V47.1',13:'V46',14:'V46',15:'V46',16:'V46',17:'V46',18:'V46',19:'V47.2',20:'V47.2',21:'V47.2',22:'V47.2',23:'V47.2',24:'V47.2',25:'V47.2',26:'V47.2',27:'V47.2',28:'V47.2',29:'V47.2',30:'V47.2',31:'V47.2',32:'V47.2',33:'V47.2',34:'V47.2',35:'V47.2',36:'V47.4',37:'V47.4',38:'V47.4',39:'V47.4',40:'V47.4',41:'V47.3',42:'V47.4',43:'V47.4',44:'V47.5',45:'V47.4',46:'V47.4',47:'V46',48:'V46',49:'V48.4',50:'V47.6',51:'V47.7',52:'V47.5',53:'V47.6',54:'V47.8',55:'V47.8',56:'V47.9',57:'V47.9',58:'V48',59:'V48.1',60:'V48.2',61:'V48.3',62:'V48.5',63:'V48.6',64:'V48.7',65:'V48.8',66:'V48.9',67:'V48.10',68:'V48.10',69:'V48.10',70:'Roadmap',71:'Roadmap',72:'Roadmap',73:'Roadmap',74:'Roadmap'};
+function genericMeta(c){
+ const [group,num,name,status]=c;
+ const type=status==='live'?'Browser / server production capability':status==='wired'?'Connected workflow capability':status==='model'?'Model-backed intelligence layer':'Planned platform capability';
+ const connected=group==='Platform'?'Projects · Accounts · Delivery · Intelligence':`${group} engine · AI Director · Quality Guard`;
+ const purpose=detailMeta[name]?.[0] || `${name} is part of the ${group.toLowerCase()} layer and contributes to HotFoto’s end-to-end photographic production loop.`;
+ const next=detailMeta[name]?.[4] || (status==='planned'?'Defined roadmap capability':'Deeper model integration, confidence and automation');
+ const note=detailMeta[name]?.[5] || (status==='model'?'Requires a configured model/provider for full intelligence behavior.':status==='wired'?'Connected in the workflow architecture; exact model behavior depends on configuration.':'This capability is represented honestly according to its current implementation state.');
+ return {purpose,connected,type,release:detailMeta[name]?.[3]||releaseByNum[Number(num)]||'V46',next,note};
+}
 function render(filter='all'){
  const grid=document.getElementById('capabilityGrid'); grid.innerHTML='';
  groups.forEach(group=>{
   const rows=capabilities.filter(c=>c[0]===group && (filter==='all'||c[3]===filter));
   if(!rows.length)return;
   const stage=document.createElement('article'); stage.className='os-stage';
-  stage.innerHTML=`<div class="stage-head"><h3>${group}</h3><small>${rows.length} CAPABILITIES</small></div><div class="cap-list">${rows.map(c=>`<div class="cap"><span class="cap-num">${c[1]}</span><div><b>${c[2]}</b><small>${group==='Platform'?'Platform intelligence':'Production engine'}</small></div><span class="state state-${c[3]}">${stateLabel[c[3]]}</span></div>`).join('')}</div>`;
+  stage.innerHTML=`<div class="stage-head"><h3>${group}</h3><small>${rows.length} CAPABILITIES</small></div><div class="cap-list">${rows.map(c=>`<button class="cap" type="button" data-cap="${c[1]}" aria-label="Inspect ${c[2]}"><span class="cap-num">${c[1]}</span><div><b>${c[2]}</b><small>${stagePurpose[group]}</small></div><span class="state state-${c[3]}">${stateLabel[c[3]]}</span><span class="cap-open">VIEW ↗</span></button>`).join('')}</div>`;
   grid.appendChild(stage);
  });
+ grid.querySelectorAll('.cap').forEach(btn=>btn.addEventListener('click',()=>openDetail(btn.dataset.cap)));
 }
+function openDetail(id){
+ const c=capabilities.find(x=>x[1]===id); if(!c)return;
+ const meta=genericMeta(c); const panel=document.getElementById('capabilityDetail');
+ document.getElementById('detailKicker').textContent=`${c[0].toUpperCase()} · CAPABILITY ${c[1]}`;
+ document.getElementById('detailTitle').textContent=c[2];
+ const state=document.getElementById('detailState'); state.className=`state state-${c[3]}`; state.textContent=stateLabel[c[3]];
+ document.getElementById('detailPurpose').textContent=meta.purpose;
+ document.getElementById('detailConnected').textContent=meta.connected;
+ document.getElementById('detailType').textContent=meta.type;
+ document.getElementById('detailRelease').textContent=meta.release;
+ document.getElementById('detailNext').textContent=meta.next;
+ document.getElementById('detailNote').textContent=meta.note;
+ panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); document.body.classList.add('detail-open');
+}
+function closeDetail(){const p=document.getElementById('capabilityDetail');p.classList.remove('open');p.setAttribute('aria-hidden','true');document.body.classList.remove('detail-open');}
 function renderTimeline(){
  document.getElementById('timelineList').innerHTML=releases.map(r=>`<div class="timeline-item"><div class="timeline-card"><div class="timeline-top"><b>${r[0]} · ${r[1]}</b><span>MILESTONE</span></div><p>${r[2]}</p><div class="release-tags">${r.slice(3).map(x=>`<span>${x}</span>`).join('')}</div></div></div>`).join('');
 }
 function setup(){
  document.querySelectorAll('#filters button').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('#filters button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render(btn.dataset.filter)}));
  document.getElementById('jumpTimeline').addEventListener('click',()=>document.getElementById('timeline').scrollIntoView({behavior:'smooth'}));
+ document.getElementById('detailClose').addEventListener('click',closeDetail);
+ document.querySelector('[data-close-detail]').addEventListener('click',closeDetail);
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()});
  render(); renderTimeline();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();

@@ -6,15 +6,15 @@
 <meta name="description" content="HotFoto AI capability map, production architecture and release history.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=hotfoto48.11.1">
-<link rel="stylesheet" href="css/engine.css?v=hotfoto48.11.1">
-<script defer src="js/engine.js?v=hotfoto48.11.1"></script>
+<link rel="stylesheet" href="css/styles.css?v=hotfoto48.12">
+<link rel="stylesheet" href="css/engine.css?v=hotfoto48.12">
+<script defer src="js/engine.js?v=hotfoto48.12"></script>
 </head>
 <body class="hf-engine-page">
 <div class="noise"></div>
 <header class="nav hf-studio-nav">
   <a class="brand" href="index.html"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></a>
-  <div class="studio-nav-center"><span class="studio-live-dot"></span><span>HOTFOTO OS</span><b>V48.11</b></div>
+  <div class="studio-nav-center"><span class="studio-live-dot"></span><span>HOTFOTO OS</span><b>V48.12</b></div>
   <div class="nav-actions"><a class="btn ghost" href="studio.html">← Studio</a><a class="btn primary" href="workflow.html">Workflow <span>↗</span></a></div>
 </header>
 
@@ -40,6 +40,22 @@
   <section class="os-map-section" id="capabilities">
     <div class="section-head"><div><span class="eyebrow">THE ENGINE</span><h2>Capability map</h2><p>One view of the production engine and everything connected to it.</p></div><div class="os-filters" id="filters"><button class="active" data-filter="all">ALL <b>74</b></button><button data-filter="live">LIVE <b>11</b></button><button data-filter="wired">WIRED <b>20</b></button><button data-filter="model">MODEL <b>31</b></button><button data-filter="planned">PLANNED <b>12</b></button></div></div>
     <div class="os-stage-grid" id="capabilityGrid"></div>
+    <div class="capability-detail" id="capabilityDetail" aria-hidden="true">
+      <div class="detail-backdrop" data-close-detail></div>
+      <aside class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <button class="detail-close" id="detailClose" aria-label="Close capability details">×</button>
+        <div class="detail-kicker" id="detailKicker">CAPABILITY</div>
+        <div class="detail-title-row"><h3 id="detailTitle">Capability</h3><span id="detailState" class="state state-wired">WIRED</span></div>
+        <p class="detail-purpose" id="detailPurpose"></p>
+        <div class="detail-grid">
+          <div><span>CONNECTED TO</span><b id="detailConnected"></b></div>
+          <div><span>INTELLIGENCE TYPE</span><b id="detailType"></b></div>
+          <div><span>INTRODUCED</span><b id="detailRelease"></b></div>
+          <div><span>NEXT UPGRADE</span><b id="detailNext"></b></div>
+        </div>
+        <div class="detail-note" id="detailNote"></div>
+      </aside>
+    </div>
   </section>
 
   <section class="os-flow">
@@ -63,6 +79,6 @@
   </section>
 </main>
 
-<footer class="studio-footer"><div class="brand"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></div><p>AI photography production, from RAW to remarkable.</p><div><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a href="projects.html">Projects</a><a href="pricing.html">Pricing</a><a href="studio.html">Studio</a></div><small>© 2026 HotFoto AI · V48.11.1 Intelligence Map</small></footer>
+<footer class="studio-footer"><div class="brand"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></div><p>AI photography production, from RAW to remarkable.</p><div><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a href="projects.html">Projects</a><a href="pricing.html">Pricing</a><a href="studio.html">Studio</a></div><small>© 2026 HotFoto AI · V48.12.1 Intelligence Map</small></footer>
 </body>
 </html>
