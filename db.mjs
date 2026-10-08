@@ -116,6 +116,28 @@ export async function listProjects(userId) {
   const p=await getPool(); if(!p) return await read(`projects-${userId}.json`,[]);
   const r=await p.query('select id,name,"shoot_profile" as "shootProfile",status,summary,"created_at" as "createdAt","updated_at" as "updatedAt" from hotfoto_projects where user_id=$1 order by updated_at desc limit 100',[userId]); return r.rows;
 }
+
+export async function getProject(userId, projectId) {
+  const p = await getPool();
+  if (!p) {
+    const projects = await read(`projects-${userId}.json`, []);
+    const project = projects.find(x => x.id === projectId);
+    if (!project) return null;
+    const assets = await read(`assets-${projectId}.json`, []);
+    return { ...project, assets };
+  }
+  const r = await p.query(`select id,name,shoot_profile as "shootProfile",status,summary,created_at as "createdAt",updated_at as "updatedAt" from hotfoto_projects where id=$1 and user_id=$2`, [projectId,userId]);
+  if (!r.rowCount) return null;
+  const a = await p.query(`select id,project_id as "projectId",name,storage_key as "storageKey",mime_type as "mimeType",bytes,width,height,sha256,metadata,created_at as "createdAt" from hotfoto_assets where project_id=$1 and user_id=$2 order by created_at asc`, [projectId,userId]);
+  return { ...r.rows[0], assets: a.rows };
+}
+
+export async function listProjectAssets(userId, projectId) {
+  const project = await getProject(userId, projectId);
+  if (!project) throw new Error('PROJECT_NOT_FOUND');
+  return project.assets || [];
+}
+
 export async function updateProject(userId,id,patch) {
   const p=await getPool(); if(!p) { const projects=await read(`projects-${userId}.json`,[]); const i=projects.findIndex(x=>x.id===id); if(i<0) throw new Error('PROJECT_NOT_FOUND'); projects[i]={...projects[i],...patch,updatedAt:new Date().toISOString()}; await write(`projects-${userId}.json`,projects); return projects[i]; }
   const r=await p.query(`update hotfoto_projects set name=coalesce($3,name), status=coalesce($4,status), summary=coalesce($5,summary), updated_at=now() where id=$1 and user_id=$2 returning id,name,shoot_profile as "shootProfile",status,summary,created_at as "createdAt",updated_at as "updatedAt"`,[id,userId,patch.name||null,patch.status||null,patch.summary||null]); if(!r.rowCount) throw new Error('PROJECT_NOT_FOUND'); return r.rows[0];

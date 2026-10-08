@@ -1,3 +1,19 @@
+# HotFoto AI V48 — Project Workspace
+
+V48 adds the persistent photographer workspace and cloud asset browser on top of the V47.9 secure resumable-upload architecture.
+
+## V48 focus
+- Account-scoped production workspace
+- Cloud project browser
+- Asset browser and upload-state visibility
+- Project summaries for frames, keepers, quality and Style DNA
+- Short-lived signed asset downloads
+- Secure project/asset ownership enforcement
+- Studio handoff from a selected production
+
+See `PROJECT-WORKSPACE-V48.md` for the API and security contract.
+
+Previous V47 architecture and capability audit files are retained in this package.
 ## V47.4 — Style DNA + Self-Correction
 
 - Model-backed Style DNA learning from the strongest reference frames.

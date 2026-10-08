@@ -4,8 +4,8 @@ import sharp from 'sharp';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, updateProject, createAsset, getAsset, updateAssetMetadata } from './db.mjs';
-import { storageHealth, initiateMultipart, completeMultipart, abortMultipart, headObject } from './storage.mjs';
+import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, getProject, listProjectAssets, updateProject, createAsset, getAsset, updateAssetMetadata } from './db.mjs';
+import { storageHealth, initiateMultipart, completeMultipart, abortMultipart, headObject, signedDownload } from './storage.mjs';
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -62,6 +62,8 @@ async function logout(req) { const header=String(req.headers.authorization||'');
 
 async function projectCreate(body, userId) { return {ok:true, project:await createProject(userId,body)}; }
 async function projectList(userId) { return {ok:true, projects:await listProjects(userId)}; }
+async function projectDetail(userId, projectId) { const project=await getProject(userId, projectId); if(!project) throw new Error('PROJECT_NOT_FOUND'); return {ok:true, project}; }
+async function projectAssets(userId, projectId) { return {ok:true, assets:await listProjectAssets(userId, projectId)}; }
 async function projectUpdate(body,userId) { return {ok:true, project:await updateProject(userId,String(body.projectId||''),body)}; }
 async function projectAsset(body,userId) { return {ok:true, asset:await createAsset(userId,String(body.projectId||''),{name:String(body.name||'asset'),mimeType:body.mimeType,bytes:body.bytes,metadata:body.metadata}) , storage:{provider:STORAGE_PROVIDER,bucket:STORAGE_BUCKET,endpoint:STORAGE_ENDPOINT,publicBase:STORAGE_PUBLIC_BASE||null}}; }
 
@@ -380,7 +382,7 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v47.9',
+        version: 'v48.0',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
@@ -391,6 +393,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/health/storage') return json(res, 200, storageHealth());
     if (req.method === 'GET' && url.pathname === '/auth/me') { const session = await authenticate(req); return json(res, 200, { ok: true, user: { id: session.userId, email: session.email }, expiresAt: new Date(Number(session.expiresAt)).toISOString() }); }
     if (req.method === 'GET' && url.pathname === '/projects') return json(res, 200, await projectList((await authenticate(req)).userId));
+    if (req.method === 'GET' && url.pathname.startsWith('/projects/')) { const session=await authenticate(req); const parts=url.pathname.split('/').filter(Boolean); const projectId=parts[1]; if(parts[2]==='assets') return json(res,200,await projectAssets(session.userId,projectId)); return json(res,200,await projectDetail(session.userId,projectId)); }
     if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
     const body = await readBody(req);
     if (url.pathname === '/auth/register') return json(res, 201, await createAccount(body));
@@ -404,6 +407,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/assets/multipart/init') return json(res, 201, await initMultipart(body, session.userId));
     if (url.pathname === '/assets/multipart/complete') return json(res, 200, await completeAssetUpload(body, session.userId));
     if (url.pathname === '/assets/multipart/abort') return json(res, 200, await abortAssetUpload(body, session.userId));
+    if (url.pathname === '/assets/download') { const asset=await getAsset(session.userId,String(body.assetId||'')); if(!asset) throw new Error('ASSET_NOT_FOUND'); if(!storageHealth().enabled) return json(res,200,{ok:true,url:null,local:true,storageKey:asset.storageKey}); return json(res,200,{...(await signedDownload({key:asset.storageKey})),assetId:asset.id}); }
     if (url.pathname === '/plan') return json(res, 200, await plan(body));
     if (url.pathname === '/analyze') return json(res, 200, await analyze(body));
     if (url.pathname === '/quality') return json(res, 200, await quality(body));

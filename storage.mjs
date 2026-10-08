@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { S3Client, CreateMultipartUploadCommand, UploadPartCommand, CompleteMultipartUploadCommand, AbortMultipartUploadCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, CreateMultipartUploadCommand, UploadPartCommand, CompleteMultipartUploadCommand, AbortMultipartUploadCommand, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const BUCKET = process.env.HOTFOTO_STORAGE_BUCKET || '';
@@ -62,6 +62,13 @@ export async function abortMultipart({ key, uploadId }) {
   requireStorage();
   await client.send(new AbortMultipartUploadCommand({ Bucket: BUCKET, Key: safeKey(key), UploadId: String(uploadId || '') }));
   return { ok: true };
+}
+
+export async function signedDownload({ key, expiresIn = PRESIGN_TTL }) {
+  requireStorage();
+  const safe = safeKey(key);
+  const url = await getSignedUrl(client, new GetObjectCommand({ Bucket: BUCKET, Key: safe }), { expiresIn: Math.max(60, Math.min(900, Number(expiresIn) || PRESIGN_TTL)) });
+  return { ok: true, url, expiresIn: Math.max(60, Math.min(900, Number(expiresIn) || PRESIGN_TTL)) };
 }
 
 export async function headObject({ key }) {
