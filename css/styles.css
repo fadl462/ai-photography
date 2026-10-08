@@ -1274,3 +1274,9 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
 
 /* V37: lock the desktop studio cockpit to a stable viewport; prevent uploaded media from changing page height. */
 @media(min-width:821px){.studio-app{height:680px;min-height:680px}.studio-main,.studio-workarea,.canvas-zone,.ai-command-panel{min-height:0}.photo-stage{height:100%;min-height:0}.photo-viewport{min-height:0}}
+
+/* HotFoto AI Studio V38 — in-cockpit start action */
+.studio-top-start{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:7px;font-size:7px;box-shadow:0 7px 20px rgba(64,112,255,.16);margin-left:4px;white-space:nowrap}
+.studio-top-start .start-icon{width:16px;height:16px;font-size:8px}
+.studio-topbar .studio-top-start[hidden]{display:none}
+@media(max-width:900px){.studio-top-start{padding:8px 9px}.studio-top-start span:nth-child(2){display:none}.studio-top-start i{font-size:10px}}
