@@ -167,6 +167,39 @@ async function campaignPlan(body,userId){
   return {ok:true,projectId,campaign:{name:campaignName,summary:campaignSummary,platforms,cadence:campaignPosts.map((p,i)=>({day:i+1,stage:p.stage.stage,platform:p.platform,purpose:p.stage.purpose})),strategy:['Preserve the visual narrative across every platform','Lead with the strongest frame before adding context','Adapt voice and ratio without breaking story continuity','Use the final post as the campaign resolution']},storyIntelligence:story,posts:campaignPosts,createdAt:new Date().toISOString()};
 }
 
+async function campaignCalendar(body,userId){
+  const posts=Array.isArray(body.posts)?body.posts:[];
+  if(!posts.length) throw new Error('CAMPAIGN_POSTS_REQUIRED');
+  const startRaw=String(body.startDate||'').trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(startRaw)) throw new Error('START_DATE_REQUIRED');
+  const start=new Date(`${startRaw}T12:00:00Z`);
+  if(Number.isNaN(start.getTime())) throw new Error('INVALID_START_DATE');
+  const spacing=Math.max(1,Math.min(14,Number(body.spacingDays)||2));
+  const preferredHour=Math.max(0,Math.min(23,Number(body.hour) || 18));
+  const slots=posts.map((post,i)=>{
+    const d=new Date(start.getTime()+i*spacing*86400000);
+    d.setUTCHours(preferredHour,0,0,0);
+    return {
+      id:`slot_${i+1}`,
+      sequence:i+1,
+      date:d.toISOString().slice(0,10),
+      time:`${String(preferredHour).padStart(2,'0')}:00`,
+      platform:String(post.platform||'instagram'),
+      stage:String(post.stage?.stage||post.stage||'Publish'),
+      purpose:String(post.stage?.purpose||'Continue the campaign story'),
+      hook:String(post.copy?.hook||post.hook||''),
+      assetId:post.assetId||post.asset?.id||null,
+      status:'PLANNED'
+    };
+  });
+  let directorNote='A deliberate cadence that gives each post room to breathe while preserving the campaign arc.';
+  if(OPENAI_API_KEY){
+    const prompt=`${systemRules}\nYou are HotFoto AI Campaign Scheduler. Return JSON only with note (max 220 chars) and one short reason. Assess this planned campaign calendar for narrative pacing. Do not invent facts.\nCalendar: ${JSON.stringify(slots)}`;
+    try{const r=await openAIResponses({model:PLANNER_MODEL,input:[{role:'user',content:[{type:'input_text',text:prompt}]}],maxOutputTokens:300});const parsed=parseJson(extractText(r));if(parsed?.note) directorNote=String(parsed.note);}catch{}
+  }
+  return {ok:true,projectId:body.projectId||null,calendar:{startDate:startRaw,spacingDays:spacing,hour:preferredHour,timezone:'UTC',slots,directorNote},createdAt:new Date().toISOString()};
+}
+
 async function albumPlan(body,userId){ const projectId=String(body.projectId||''); const assets=await listProjectAssets(userId,projectId); const selected=Array.isArray(body.assetIds)&&body.assetIds.length?assets.filter(a=>body.assetIds.includes(a.id)):assets; let story={enabled:false,reason:'DETERMINISTIC_LAYOUT'}; let ordered=selected; try { story=await storyIntelligence(selected,body.format||'gallery'); if(story.enabled&&Array.isArray(story.rankedAssetIds)){ const byId=new Map(selected.map(a=>[a.id,a])); ordered=story.rankedAssetIds.map(id=>byId.get(id)).filter(Boolean); } } catch(e){ story={enabled:false,reason:'MODEL_ERROR',error:String(e?.message||e).slice(0,180)}; } const plan=albumLayout(ordered,body.format||'gallery'); plan.storyIntelligence=story; return {ok:true,plan,projectId}; }
 async function albumCreate(body,userId){ const plan=body.plan||{}; const row=await createAlbum(userId,String(body.projectId||''),{title:body.title,format:body.format||'gallery',plan}); return {ok:true,album:row}; }
 async function albumList(body,userId){ return {ok:true,albums:await listAlbums(userId,String(body.projectId||''))}; }
@@ -511,11 +544,11 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v48.8',
+        version: 'v48.10',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true, finalization: true, deliveryIntelligence: true, clientFeedbackLearning: true, intelligentPackaging: true, packageProfiles: true, executionManifests: true, exportExecution: true, zipDelivery: true, signedPackageDownloads: true, albumDesigner: true, albumPlanning: true, galleryDesign: true, persistentAlbums: true, storyIntelligence: true, modelSequencing: true, narrativeBeats: true, socialStudio: true, socialPlanning: true, aiCaptions: true, socialRatios: true, campaignStudio: true, campaignPlanning: true, multiPlatformCampaigns: true, campaignArc: true }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true, finalization: true, deliveryIntelligence: true, clientFeedbackLearning: true, intelligentPackaging: true, packageProfiles: true, executionManifests: true, exportExecution: true, zipDelivery: true, signedPackageDownloads: true, albumDesigner: true, albumPlanning: true, galleryDesign: true, persistentAlbums: true, storyIntelligence: true, modelSequencing: true, narrativeBeats: true, socialStudio: true, socialPlanning: true, aiCaptions: true, socialRatios: true, campaignStudio: true, campaignPlanning: true, multiPlatformCampaigns: true, campaignArc: true, campaignCalendar: true, campaignScheduling: true, campaignCadence: true }
       });
     }
     if (req.method === 'GET' && url.pathname === '/health/db') return json(res, 200, await dbHealth());
@@ -563,6 +596,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/album/plan') return json(res, 200, await albumPlan(body, session.userId));
     if (url.pathname === '/social/plan') return json(res, 200, await socialPlan(body, session.userId));
     if (url.pathname === '/campaign/plan') return json(res, 200, await campaignPlan(body, session.userId));
+    if (url.pathname === '/campaign/calendar') return json(res, 200, await campaignCalendar(body, session.userId));
     if (url.pathname === '/story/analyze') return json(res, 200, await storyIntelligence(await listProjectAssets(session.userId,String(body.projectId||'')),body.format||'gallery'));
     if (url.pathname === '/album/create') return json(res, 201, await albumCreate(body, session.userId));
     if (url.pathname === '/album/list') return json(res, 200, await albumList(body, session.userId));
