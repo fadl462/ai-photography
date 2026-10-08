@@ -134,6 +134,39 @@ async function socialPlan(body,userId){
   return {ok:true,projectId,platform,spec,storyIntelligence:story,posts,copy,createdAt:new Date().toISOString()};
 }
 
+async function campaignPlan(body,userId){
+  const projectId=String(body.projectId||'');
+  const assets=await listProjectAssets(userId,projectId);
+  const selected=Array.isArray(body.assetIds)&&body.assetIds.length?assets.filter(a=>body.assetIds.includes(a.id)):assets;
+  const platforms=(Array.isArray(body.platforms)&&body.platforms.length?body.platforms:['instagram','facebook','linkedin']).slice(0,4);
+  const postsPerPlatform=Math.max(1,Math.min(Number(body.postsPerPlatform)||3,5));
+  let story={enabled:false,reason:'DETERMINISTIC_CAMPAIGN_ARC'};
+  let ordered=selected;
+  try { story=await storyIntelligence(selected,'campaign'); if(story.enabled&&Array.isArray(story.rankedAssetIds)){ const byId=new Map(selected.map(a=>[a.id,a])); ordered=story.rankedAssetIds.map(id=>byId.get(id)).filter(Boolean); } } catch(e){ story={enabled:false,reason:'MODEL_ERROR'}; }
+  const arc=[
+    {stage:'TEASE',purpose:'Create curiosity',role:'opening'},
+    {stage:'REVEAL',purpose:'Lead with the strongest visual',role:'hero'},
+    {stage:'DEPTH',purpose:'Add detail and context',role:'detail'},
+    {stage:'CLOSE',purpose:'Resolve the visual story',role:'closing'}
+  ];
+  const campaignPosts=[];
+  for(let i=0;i<platforms.length;i++){
+    const platform=platforms[i];
+    const count=Math.min(postsPerPlatform,Math.max(1,ordered.length));
+    const offset=i%Math.max(1,ordered.length);
+    const rotated=ordered.length?ordered.slice(offset).concat(ordered.slice(0,offset)):[];
+    const assetIds=rotated.slice(0,count).map(a=>a.id);
+    const social=await socialPlan({projectId,platform,count,assetIds},userId);
+    campaignPosts.push({platform,scheduleIndex:i+1,stage:arc[Math.min(i,arc.length-1)],...social});
+  }
+  let campaignName=`${projectId||'Production'} · Campaign`; let campaignSummary='A coordinated visual campaign built from one production, preserving story continuity while adapting copy and format by platform.';
+  if(OPENAI_API_KEY && ordered.length){
+    const prompt=`${systemRules}\nYou are HotFoto AI Campaign Director. Build a concise multi-platform campaign arc from a photography production. Return JSON only: campaignName (max 70 chars), summary (max 300 chars), strategy (array max 5 short points). The campaign must move from curiosity to strongest visual proof to depth/context to a clear close. Do not invent facts about the shoot.`;
+    try{ const r=await openAIResponses({model:VISION_MODEL,input:[{role:'user',content:[{type:'input_text',text:prompt},{type:'input_text',text:`Production: ${projectId||'Untitled'}\nPlatforms: ${platforms.join(', ')}\nStory beats: ${(story.beatSummary||[]).join(' | ')}`}]}],maxOutputTokens:700}); const parsed=parseJson(extractText(r)); if(parsed){ campaignName=String(parsed.campaignName||campaignName); campaignSummary=String(parsed.summary||campaignSummary); } }catch{}
+  }
+  return {ok:true,projectId,campaign:{name:campaignName,summary:campaignSummary,platforms,cadence:campaignPosts.map((p,i)=>({day:i+1,stage:p.stage.stage,platform:p.platform,purpose:p.stage.purpose})),strategy:['Preserve the visual narrative across every platform','Lead with the strongest frame before adding context','Adapt voice and ratio without breaking story continuity','Use the final post as the campaign resolution']},storyIntelligence:story,posts:campaignPosts,createdAt:new Date().toISOString()};
+}
+
 async function albumPlan(body,userId){ const projectId=String(body.projectId||''); const assets=await listProjectAssets(userId,projectId); const selected=Array.isArray(body.assetIds)&&body.assetIds.length?assets.filter(a=>body.assetIds.includes(a.id)):assets; let story={enabled:false,reason:'DETERMINISTIC_LAYOUT'}; let ordered=selected; try { story=await storyIntelligence(selected,body.format||'gallery'); if(story.enabled&&Array.isArray(story.rankedAssetIds)){ const byId=new Map(selected.map(a=>[a.id,a])); ordered=story.rankedAssetIds.map(id=>byId.get(id)).filter(Boolean); } } catch(e){ story={enabled:false,reason:'MODEL_ERROR',error:String(e?.message||e).slice(0,180)}; } const plan=albumLayout(ordered,body.format||'gallery'); plan.storyIntelligence=story; return {ok:true,plan,projectId}; }
 async function albumCreate(body,userId){ const plan=body.plan||{}; const row=await createAlbum(userId,String(body.projectId||''),{title:body.title,format:body.format||'gallery',plan}); return {ok:true,album:row}; }
 async function albumList(body,userId){ return {ok:true,albums:await listAlbums(userId,String(body.projectId||''))}; }
@@ -482,7 +515,7 @@ const server = http.createServer(async (req, res) => {
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true, finalization: true, deliveryIntelligence: true, clientFeedbackLearning: true, intelligentPackaging: true, packageProfiles: true, executionManifests: true, exportExecution: true, zipDelivery: true, signedPackageDownloads: true, albumDesigner: true, albumPlanning: true, galleryDesign: true, persistentAlbums: true, storyIntelligence: true, modelSequencing: true, narrativeBeats: true, socialStudio: true, socialPlanning: true, aiCaptions: true, socialRatios: true }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true, finalization: true, deliveryIntelligence: true, clientFeedbackLearning: true, intelligentPackaging: true, packageProfiles: true, executionManifests: true, exportExecution: true, zipDelivery: true, signedPackageDownloads: true, albumDesigner: true, albumPlanning: true, galleryDesign: true, persistentAlbums: true, storyIntelligence: true, modelSequencing: true, narrativeBeats: true, socialStudio: true, socialPlanning: true, aiCaptions: true, socialRatios: true, campaignStudio: true, campaignPlanning: true, multiPlatformCampaigns: true, campaignArc: true }
       });
     }
     if (req.method === 'GET' && url.pathname === '/health/db') return json(res, 200, await dbHealth());
@@ -529,6 +562,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/delivery/execute') return json(res, 200, await executeDeliveryPackage(body, session.userId));
     if (url.pathname === '/album/plan') return json(res, 200, await albumPlan(body, session.userId));
     if (url.pathname === '/social/plan') return json(res, 200, await socialPlan(body, session.userId));
+    if (url.pathname === '/campaign/plan') return json(res, 200, await campaignPlan(body, session.userId));
     if (url.pathname === '/story/analyze') return json(res, 200, await storyIntelligence(await listProjectAssets(session.userId,String(body.projectId||'')),body.format||'gallery'));
     if (url.pathname === '/album/create') return json(res, 201, await albumCreate(body, session.userId));
     if (url.pathname === '/album/list') return json(res, 200, await albumList(body, session.userId));
