@@ -1,20 +1,40 @@
-# HotFoto V49.2 — Studio Cleanup
+# HotFoto AI V49.3 — Photographer-First Navigation Update
 
-This patch removes the three internal controls shown in the Studio screenshot:
+## What changed
 
-- HOTFOTO OS
-- 50 ENGINE CAPABILITIES
-- AI GATEWAY
+This patch implements the navigation decision:
 
-It also removes the internal Engine Map / Intelligence controls and engineering modals from the photographer-facing experience.
+- **Projects** remains a primary navigation item.
+- **Social Studio** is removed from the primary navigation.
+- **Campaigns** is removed from the primary navigation.
+- Social Content and Campaigns remain available from a selected production in **Projects**.
+- Gateway endpoint / session token / project ID fields are hidden on the Social and Campaign pages; the existing local connection values continue to be used by the underlying scripts.
+- Direct campaign/social URLs still work.
+- The photographer is guided through: **Projects → Social Content / Campaign**.
 
 ## Install
 
-1. Upload `js/remove-internal-controls.js` to your site's `js/` folder.
-2. Upload `css/hotfoto-v49.2-cleanup.css` to your site's `css/` folder.
-3. In `studio.html`, immediately before `</head>`, add:
+1. Upload `js/hotfoto-v49-3-navigation.js` to your site's `js/` folder.
+2. Upload `css/hotfoto-v49-3-navigation.css` to your site's `css/` folder.
+3. Add these immediately before `</head>` on the following pages:
+   - `index.html`
+   - `platform.html`
+   - `workflow.html`
+   - `projects.html`
+   - `social.html`
+   - `campaign.html`
+   - `pricing.html`
+   - `studio.html` (optional; the script is safe there)
 
-<script defer src="js/remove-internal-controls.js?v=hotfoto492"></script>
-<link rel="stylesheet" href="css/hotfoto-v49.2-cleanup.css?v=hotfoto492">
+```html
+<link rel="stylesheet" href="css/hotfoto-v49-3-navigation.css?v=hotfoto493">
+<script defer src="js/hotfoto-v49-3-navigation.js?v=hotfoto493"></script>
+```
 
-The patch is intentionally additive so it does not overwrite your existing Studio files.
+The patch is additive: it does not require replacing the existing HTML pages.
+
+## Intended customer flow
+
+**Projects → select production → Social Content or Build Campaign**
+
+The engineering architecture stays behind the scenes. Photographers see the outcome they want rather than the infrastructure that powers it.

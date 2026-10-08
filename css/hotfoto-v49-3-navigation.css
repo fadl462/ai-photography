@@ -1,0 +1,38 @@
+/* HotFoto AI V49.3 — photographer-first navigation + promotion UI */
+.nav nav a[href="social.html"],
+.nav nav a[href="campaign.html"] { display:none !important; }
+
+.promotion-context {
+  display:grid;
+  gap:7px;
+  padding:15px 16px;
+  margin:4px 0 18px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:15px;
+  background:linear-gradient(135deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+}
+.promotion-context .context-label,
+.promotion-label {
+  font:600 9px Space Grotesk;
+  letter-spacing:.14em;
+  color:#8e96a5;
+}
+.promotion-context b { font:700 15px Manrope; }
+.promotion-context small { color:#9298a4; line-height:1.5; }
+.promotion-context .btn { margin-top:4px; }
+
+.promotion-actions {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-left:auto;
+  margin-top:10px;
+}
+.promotion-actions .btn { margin-top:0; }
+.promotion-actions button:disabled { opacity:.35; cursor:not-allowed; }
+
+@media (max-width:560px) {
+  .promotion-actions { width:100%; margin-left:0; }
+  .promotion-actions .btn { flex:1; }
+}
