@@ -80,12 +80,33 @@ function closeDetail(){const p=document.getElementById('capabilityDetail');p.cla
 function renderTimeline(){
  document.getElementById('timelineList').innerHTML=releases.map(r=>`<div class="timeline-item"><div class="timeline-card"><div class="timeline-top"><b>${r[0]} · ${r[1]}</b><span>MILESTONE</span></div><p>${r[2]}</p><div class="release-tags">${r.slice(3).map(x=>`<span>${x}</span>`).join('')}</div></div></div>`).join('');
 }
+
+const archMeta={
+ ingest:['INGEST','Source photography enters safely with metadata, protection and preview generation.','Ingest · originals · metadata'],
+ understand:['UNDERSTAND','Vision and context layers interpret scene, people, lighting, composition and story.','Vision · context · story'],
+ cull:['CULL','Focus, expression, technical quality and keeper intelligence reduce the shoot to the strongest frames.','Cull engine · review queue'],
+ create:['CREATE','Develop, retouch, Style DNA and generative tools shape the final photograph.','Develop · Retouch · Style DNA'],
+ guard:['GUARD','Quality Guard checks artifacts, confidence and bounded corrections before delivery.','Quality Guard · review'],
+ deliver:['DELIVER','Proofing, export, packaging and client delivery turn approved work into outputs.','Proofing · Export · Delivery'],
+ director:['AI DIRECTOR','The orchestration layer translates photographic intent into bounded production decisions.','Planner · Style DNA · Quality Guard'],
+ dna:['STYLE DNA','Photographer preferences and approved work inform consistent creative direction.','Project memory · feedback'],
+ memory:['PROJECT MEMORY','Persistent project and photographer signals feed future production decisions.','Projects · Intelligence ledger'],
+ vision:['VISION','Model-backed visual understanding provides scene, subject and photographic context when configured.','Vision model · analysis']
+};
+function setupArchitecture(){
+ const root=document.querySelector('.os-architecture'); const readout=document.getElementById('archReadout'); if(!root||!readout)return;
+ const core=document.getElementById('archCore');
+ const show=(key)=>{const m=archMeta[key];if(!m)return; root.querySelectorAll('.arch-node').forEach(n=>n.classList.toggle('active',n.dataset.arch===key)); readout.innerHTML=`<span>${m[0]}</span><b>${m[1]}</b><p>${m[2]}</p>`;root.classList.add('arch-armed');};
+ root.querySelectorAll('.arch-node').forEach(n=>{n.addEventListener('click',()=>show(n.dataset.arch));n.addEventListener('mouseenter',()=>show(n.dataset.arch));});
+ core.addEventListener('click',()=>{root.querySelectorAll('.arch-node').forEach(n=>n.classList.remove('active'));readout.innerHTML='<span>HOTFOTO INTELLIGENCE CORE</span><b>One production loop.</b><p>Orchestrates the connected layers represented in this architecture map.</p>';});
+ core.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();core.click();}});
+}
 function setup(){
  document.querySelectorAll('#filters button').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('#filters button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render(btn.dataset.filter)}));
  document.getElementById('jumpTimeline').addEventListener('click',()=>document.getElementById('timeline').scrollIntoView({behavior:'smooth'}));
  document.getElementById('detailClose').addEventListener('click',closeDetail);
  document.querySelector('[data-close-detail]').addEventListener('click',closeDetail);
  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()});
- render(); renderTimeline();
+ render(); renderTimeline(); setupArchitecture();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();

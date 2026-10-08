@@ -6,15 +6,15 @@
 <meta name="description" content="HotFoto AI capability map, production architecture and release history.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=hotfoto48.12.2">
-<link rel="stylesheet" href="css/engine.css?v=hotfoto48.12.2">
-<script defer src="js/engine.js?v=hotfoto48.12.2"></script>
+<link rel="stylesheet" href="css/styles.css?v=hotfoto48.13">
+<link rel="stylesheet" href="css/engine.css?v=hotfoto48.13">
+<script defer src="js/engine.js?v=hotfoto48.13"></script>
 </head>
 <body class="hf-engine-page">
 <div class="noise"></div>
 <header class="nav hf-studio-nav">
   <a class="brand" href="index.html"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></a>
-  <div class="studio-nav-center"><span class="studio-live-dot"></span><span>HOTFOTO OS</span><b>V48.12.2</b></div>
+  <div class="studio-nav-center"><span class="studio-live-dot"></span><span>HOTFOTO OS</span><b>V48.13</b></div>
   <div class="nav-actions"><a class="btn ghost" href="studio.html">← Studio</a><a class="btn primary" href="workflow.html">Workflow <span>↗</span></a></div>
 </header>
 
@@ -26,7 +26,28 @@
       <p>See the HotFoto AI production engine, platform intelligence, creative systems and delivery infrastructure in one place — including what is live, wired, model-backed or planned.</p>
       <div class="os-hero-actions"><a class="studio-start-btn" href="studio.html"><span class="start-icon">✦</span><span>OPEN STUDIO</span><i>↗</i></a><button class="os-ghost" id="jumpTimeline">VIEW BUILD HISTORY ↓</button></div>
     </div>
-    <div class="os-hero-orbit" aria-hidden="true"><div class="orbit-ring r1"></div><div class="orbit-ring r2"></div><div class="orbit-ring r3"></div><div class="orbit-core">✦</div><span class="orbit-node n1">AI</span><span class="orbit-node n2">DNA</span><span class="orbit-node n3">QC</span><span class="orbit-node n4">OS</span></div>
+    <div class="os-architecture" aria-label="Interactive HotFoto OS architecture map">
+      <div class="arch-grid"></div>
+      <div class="arch-label arch-label-top">SYSTEM ARCHITECTURE <span>CONNECTED</span></div>
+      <svg class="arch-lines" viewBox="0 0 620 430" aria-hidden="true">
+        <path d="M310 215 L96 78 M310 215 L310 58 M310 215 L524 78 M310 215 L82 352 M310 215 L310 372 M310 215 L538 352" />
+        <path class="secondary" d="M310 215 L154 136 M310 215 L466 136 M310 215 L150 294 M310 215 L470 294" />
+      </svg>
+      <button class="arch-node workflow-node n-ingest" data-arch="ingest"><span>01</span><b>INGEST</b><small>Import · metadata</small></button>
+      <button class="arch-node workflow-node n-understand" data-arch="understand"><span>02</span><b>UNDERSTAND</b><small>Scene · people · story</small></button>
+      <button class="arch-node workflow-node n-cull" data-arch="cull"><span>03</span><b>CULL</b><small>Focus · keepers</small></button>
+      <button class="arch-node workflow-node n-create" data-arch="create"><span>04</span><b>CREATE</b><small>Develop · retouch</small></button>
+      <button class="arch-node workflow-node n-guard" data-arch="guard"><span>05</span><b>GUARD</b><small>Quality · confidence</small></button>
+      <button class="arch-node workflow-node n-deliver" data-arch="deliver"><span>06</span><b>DELIVER</b><small>Proof · export</small></button>
+      <button class="arch-node intel-node n-director" data-arch="director"><b>AI DIRECTOR</b></button>
+      <button class="arch-node intel-node n-dna" data-arch="dna"><b>STYLE DNA</b></button>
+      <button class="arch-node intel-node n-memory" data-arch="memory"><b>PROJECT MEMORY</b></button>
+      <button class="arch-node intel-node n-vision" data-arch="vision"><b>VISION</b></button>
+      <div class="arch-core" id="archCore" tabindex="0" role="button" aria-label="HotFoto Intelligence Core">
+        <span class="core-pulse"></span><strong>✦</strong><small>HOTFOTO<br>INTELLIGENCE CORE</small>
+      </div>
+      <div class="arch-readout" id="archReadout"><span>SELECT A SYSTEM</span><b>One production loop.</b><p>Click a node to inspect how that layer connects to the HotFoto OS.</p></div>
+    </div>
   </section>
 
   <section class="os-stats">
@@ -79,6 +100,6 @@
   </section>
 </main>
 
-<footer class="studio-footer"><div class="brand"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></div><p>AI photography production, from RAW to remarkable.</p><div><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a href="projects.html">Projects</a><a href="pricing.html">Pricing</a><a href="studio.html">Studio</a></div><small>© 2026 HotFoto AI · V48.12.2 Intelligence Map</small></footer>
+<footer class="studio-footer"><div class="brand"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></div><p>AI photography production, from RAW to remarkable.</p><div><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a href="projects.html">Projects</a><a href="pricing.html">Pricing</a><a href="studio.html">Studio</a></div><small>© 2026 HotFoto AI · V48.13 Intelligence Map</small></footer>
 </body>
 </html>
