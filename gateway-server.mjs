@@ -1,5 +1,6 @@
 import http from 'node:http';
 import { URL } from 'node:url';
+import sharp from 'sharp';
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -7,7 +8,8 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, '');
 const VISION_MODEL = process.env.HOTFOTO_VISION_MODEL || 'gpt-6-luna';
 const PLANNER_MODEL = process.env.HOTFOTO_PLANNER_MODEL || VISION_MODEL;
-const MAX_BODY = Number(process.env.HOTFOTO_MAX_BODY || 18 * 1024 * 1024);
+const MAX_BODY = Number(process.env.HOTFOTO_MAX_BODY || 28 * 1024 * 1024);
+const WORKER_MAX_EDGE = Number(process.env.HOTFOTO_WORKER_MAX_EDGE || 5000);
 
 const json = (res, status, body) => {
   const out = JSON.stringify(body);
@@ -120,19 +122,50 @@ async function quality(body) {
   return { ...parsed, provider: 'openai', model: VISION_MODEL, generatedAt: new Date().toISOString() };
 }
 
+const dataUrlToBuffer = value => {
+  const match = String(value || '').match(/^data:([^;]+);base64,(.+)$/s);
+  if (!match) throw new Error('INVALID_IMAGE_DATA_URL');
+  return { mime: match[1], buffer: Buffer.from(match[2], 'base64') };
+};
+
+const bufferToDataUrl = (buffer, mime='image/jpeg') => `data:${mime};base64,${buffer.toString('base64')}`;
+
 async function processRequest(body) {
-  // V47 intentionally does not claim server-side pixel editing. It returns an executable recipe.
-  // A future image-worker can consume this recipe using a dedicated editing/generative provider.
+  if (!body.image) throw new Error('IMAGE_REQUIRED');
+  const { buffer: input } = dataUrlToBuffer(body.image);
+  const meta = await sharp(input, { failOn: 'none' }).metadata();
+  const requested = Array.isArray(body.operations) ? body.operations : [];
+  const ops = requested.map(x => typeof x === 'string' ? { type: x } : x).filter(Boolean);
+  let pipeline = sharp(input, { failOn: 'none' }).rotate();
+  const maxEdge = Math.max(256, Math.min(WORKER_MAX_EDGE, Number(body.maxEdge || 2400)));
+  if (meta.width && meta.height && Math.max(meta.width, meta.height) > maxEdge) pipeline = pipeline.resize({ width: meta.width >= meta.height ? maxEdge : undefined, height: meta.height > meta.width ? maxEdge : undefined, fit: 'inside', withoutEnlargement: true });
+
+  const exposure = Number(ops.find(o => o.type === 'exposure')?.value ?? 0);
+  const contrast = Number(ops.find(o => o.type === 'contrast')?.value ?? 1.04);
+  const saturation = Number(ops.find(o => o.type === 'saturation')?.value ?? 1.04);
+  const sharpness = Number(ops.find(o => o.type === 'sharpen')?.value ?? 0.7);
+  const denoise = ops.find(o => o.type === 'denoise');
+  const normalize = ops.some(o => o.type === 'normalize');
+
+  // Deterministic photographic worker operations. Generative operations are intentionally
+  // surfaced as pending jobs rather than faking pixel edits.
+  if (normalize) pipeline = pipeline.normalize();
+  if (exposure || contrast !== 1) {
+    const gain = Math.max(0.25, Math.min(4, contrast));
+    const offset = Math.max(-60, Math.min(60, exposure * 18));
+    pipeline = pipeline.linear(gain, offset);
+  }
+  if (saturation !== 1) pipeline = pipeline.modulate({ saturation: Math.max(0, Math.min(2, saturation)) });
+  if (denoise) pipeline = pipeline.median(Math.max(1, Math.min(9, Number(denoise.value || 3))));
+  if (sharpness > 0) pipeline = pipeline.sharpen({ sigma: Math.max(0.1, Math.min(3, sharpness)) });
+
+  const output = await pipeline.jpeg({ quality: Math.max(70, Math.min(96, Number(body.quality || 92))), mozjpeg: true }).toBuffer();
+  const generative = ops.filter(o => ['generative-remove','generative-replace','generative-expand','super-resolution','background-replace','relight'].includes(o.type));
   return {
-    ok: true,
-    mode: 'recipe',
-    operationManifest: {
-      id: `op_${Date.now().toString(36)}`,
-      operations: body.operations || [],
-      nonDestructive: true,
-      originalProtected: true,
-      status: 'READY_FOR_IMAGE_WORKER'
-    }
+    ok: true, mode: 'image-worker',
+    operationManifest: { id: `op_${Date.now().toString(36)}`, operations: ops, nonDestructive: true, originalProtected: true, status: generative.length ? 'PARTIAL_WITH_GENERATIVE_PENDING' : 'COMPLETE' },
+    image: bufferToDataUrl(output),
+    worker: { provider: 'sharp', input: { width: meta.width, height: meta.height, format: meta.format }, outputBytes: output.length, generatedOperations: ops.filter(o => !generative.includes(o)), pendingGenerativeOperations: generative }
   };
 }
 
@@ -155,11 +188,11 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v47.1',
+        version: 'v47.2',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, quality: true, processRecipe: true, deliverManifest: true }
+        capabilities: { plan: true, analyze: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true }
       });
     }
     if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
