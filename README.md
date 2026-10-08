@@ -1,5 +1,11 @@
-# HotFoto AI V29 — Workflow Repair
+# HotFoto AI — V31 Workflow
 
-This package is root-ready for GitHub Pages. Replace the existing site files with these files.
+Root-ready prototype package.
 
-Key fix: the Workflow page styling is restored and cache-busted with a new stylesheet version.
+Workflow page upgraded with:
+- active AI orchestration visuals and decision-flow signals
+- stronger context-engine status treatment
+- cinematic production-complete CTA
+- final-output frame visualization
+- responsive/mobile refinements
+- reduced-motion support
