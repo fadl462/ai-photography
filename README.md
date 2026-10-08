@@ -103,3 +103,6 @@ HotFoto now includes a private client-delivery layer: photographers can publish 
 
 ### V48.3 — Finalization & Delivery Intelligence
 Client proof submissions can now be validated and finalized into a persistent package manifest. Unresolved selections and anomalies are surfaced, project readiness is updated, and client decisions contribute to Photographer Intelligence.
+
+## V48.4 — Intelligent Delivery Packaging
+Finalized client selections can now be translated into destination-aware package execution manifests for Original Archive, Web Gallery, Social Set, and Print Ready delivery. The Image Worker remains the source of truth for actual pixel-export completion.
