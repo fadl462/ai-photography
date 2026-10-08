@@ -1,4 +1,4 @@
-HotFoto AI V49.6 — Projects Hero Lock
+HotFoto AI V49.7 — Projects Hero Spacing Fix
 
 Replace:
 - projects.html
@@ -7,6 +7,4 @@ Replace:
 Keep:
 - js/projects.js
 
-V49.6 specifically fixes legacy light-theme bleed into Projects.
-The Projects body, main, shell and hero now have hard dark/cinematic overrides.
-The hero no longer depends on the global site's light background.
+This is a focused spacing correction. It removes the oversized blank area between the navigation and the Projects hero content while preserving the V49.6 cinematic visual system.

@@ -119,3 +119,39 @@ body.hf-projects-page footer{background:#050a10!important;color:#cbd4df!importan
 @media(max-width:1050px){.project-hero{grid-template-columns:1fr!important;min-height:600px!important}.hero-visual{height:330px;max-width:650px;width:100%;margin:auto}}
 @media(max-width:760px){body.hf-projects-page .project-shell{padding:92px 14px 44px!important}.project-hero{min-height:auto!important;padding-top:18px!important}.project-hero h1{font-size:54px!important}.hero-actions{flex-wrap:wrap}.hero-visual{height:290px}.frame-stack{transform:translate(-50%,-50%) rotate(-4deg) scale(.82)}.orbit-a{width:340px}.orbit-b{width:230px;height:290px}.label-project{right:0;top:24px}.label-flow{left:0;bottom:48px}.workspace-toolbar{top:65px;flex-wrap:wrap}.toolbar-search{min-width:100%}.workspace-toolbar select,.workspace-toolbar .btn{flex:1}.asset-head{flex-direction:column}.asset-actions{width:100%}.asset-actions .btn{flex:1}.asset-summary{grid-template-columns:repeat(2,1fr)}.asset-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px}.project-principles{grid-template-columns:1fr}}
 @media(max-width:480px){.project-hero h1{font-size:45px!important}.hero-workspace{width:calc(100% - 30px);justify-content:center}.hero-workspace small{display:none}.hero-actions .large{width:100%}.hero-link{width:100%;text-align:center}}
+
+/* V49.7 — tighten oversized hero headroom */
+body.hf-projects-page .project-shell{
+  padding-top:46px !important;
+}
+body.hf-projects-page .project-hero{
+  min-height:420px !important;
+  padding:12px 0 24px !important;
+  align-items:start !important;
+}
+body.hf-projects-page .hero-copy{
+  padding-top:58px !important;
+}
+body.hf-projects-page .hero-visual{
+  height:350px !important;
+  margin-top:12px;
+}
+body.hf-projects-page .frame-stack{
+  top:45% !important;
+}
+body.hf-projects-page .label-project{
+  top:18px !important;
+}
+body.hf-projects-page .hero-workspace{
+  bottom:0 !important;
+}
+@media(max-width:1050px){
+  body.hf-projects-page .project-shell{padding-top:34px !important}
+  body.hf-projects-page .project-hero{min-height:540px !important}
+  body.hf-projects-page .hero-copy{padding-top:30px !important}
+}
+@media(max-width:760px){
+  body.hf-projects-page .project-shell{padding-top:18px !important}
+  body.hf-projects-page .project-hero{min-height:auto !important;padding-top:10px !important}
+  body.hf-projects-page .hero-copy{padding-top:22px !important}
+}
