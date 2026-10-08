@@ -1259,3 +1259,6 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
   .wf-cta>.btn{margin-top:0;min-width:185px}
 }
 @media(prefers-reduced-motion:reduce){.wf-cta-frame.wf-frame-front{animation:none!important}}
+
+/* V33 — CTA label cleanup: one clear section label */
+.wf-cta .wf-complete{display:none!important}
