@@ -57,6 +57,15 @@ export async function ensureSchema() {
       metadata jsonb not null default '{}'::jsonb, created_at timestamptz not null default now()
     );
     create index if not exists hotfoto_assets_project_idx on hotfoto_assets(project_id, created_at);
+    create table if not exists hotfoto_deliveries (
+      id text primary key, project_id text not null references hotfoto_projects(id) on delete cascade,
+      user_id text not null references hotfoto_users(id) on delete cascade, token_hash text unique not null,
+      title text not null, status text not null default 'published', asset_ids jsonb not null default '[]'::jsonb,
+      options jsonb not null default '{}'::jsonb, expires_at timestamptz, created_at timestamptz not null default now(),
+      updated_at timestamptz not null default now()
+    );
+    create index if not exists hotfoto_deliveries_project_idx on hotfoto_deliveries(project_id, created_at desc);
+    create index if not exists hotfoto_deliveries_token_idx on hotfoto_deliveries(token_hash);
   `);
   return true;
 }
@@ -153,9 +162,12 @@ export async function getAsset(userId, assetId) {
   const p = await getPool();
   if (!p) {
     const projects = await read(`projects-${userId}.json`, []);
-    const foundProject = projects.find(x => x.id === assetId);
-    const list = await read(`assets-${foundProject?.id || 'unknown'}.json`, []);
-    return list.find(x => x.id === assetId && x.userId === userId) || null;
+    for (const project of projects) {
+      const list = await read(`assets-${project.id}.json`, []);
+      const found = list.find(x => x.id === assetId && x.userId === userId);
+      if (found) return found;
+    }
+    return null;
   }
   const r = await p.query(`select id, project_id as "projectId", user_id as "userId", name, storage_key as "storageKey", mime_type as "mimeType", bytes, metadata from hotfoto_assets where id=$1 and user_id=$2`, [assetId, userId]);
   return r.rows[0] || null;
@@ -176,4 +188,34 @@ export async function updateAssetMetadata(userId, assetId, patch = {}) {
   const r = await p.query(`update hotfoto_assets set bytes=coalesce($3,bytes), metadata=coalesce($4,metadata) where id=$1 and user_id=$2 returning id, project_id as "projectId", storage_key as "storageKey", bytes, metadata`, [assetId,userId,patch.bytes ?? null,patch.metadata ?? null]);
   if (!r.rowCount) throw new Error('ASSET_NOT_FOUND');
   return r.rows[0];
+}
+
+export async function createDelivery(userId, projectId, body) {
+  const p=await getPool();
+  const id=`dly_${crypto.randomBytes(10).toString('hex')}`;
+  const rawToken=crypto.randomBytes(32).toString('base64url');
+  const tokenHash=crypto.createHash('sha256').update(rawToken).digest('hex');
+  const title=String(body.title||'Client Delivery').slice(0,140);
+  const assetIds=Array.isArray(body.assetIds)?body.assetIds.map(String).slice(0,500):[];
+  const options=body.options&&typeof body.options==='object'?body.options:{};
+  const expiresAt=body.expiresAt?new Date(body.expiresAt):null;
+  if(expiresAt && Number.isNaN(expiresAt.getTime())) throw new Error('INVALID_EXPIRY');
+  if(!p){
+    const own=await getProject(userId,projectId); if(!own) throw new Error('PROJECT_NOT_FOUND');
+    const list=await read(`deliveries-${userId}.json`,[]); const item={id,projectId,userId,title,status:'published',assetIds,options,expiresAt:expiresAt?.toISOString()||null,tokenHash,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    list.unshift(item); await write(`deliveries-${userId}.json`,list.slice(0,100)); return {...item,token:rawToken};
+  }
+  const own=await p.query('select 1 from hotfoto_projects where id=$1 and user_id=$2',[projectId,userId]); if(!own.rowCount) throw new Error('PROJECT_NOT_FOUND');
+  await p.query('insert into hotfoto_deliveries(id,project_id,user_id,token_hash,title,asset_ids,options,expires_at) values($1,$2,$3,$4,$5,$6,$7,$8)',[id,projectId,userId,tokenHash,title,JSON.stringify(assetIds),JSON.stringify(options),expiresAt]);
+  return {id,projectId,userId,title,status:'published',assetIds,options,expiresAt:expiresAt?.toISOString()||null,createdAt:new Date().toISOString(),token:rawToken};
+}
+export async function listDeliveries(userId, projectId) {
+  const p=await getPool(); if(!p){ const list=await read(`deliveries-${userId}.json`,[]); return list.filter(x=>x.projectId===projectId); }
+  const r=await p.query('select id,project_id as "projectId",title,status,asset_ids as "assetIds",options,expires_at as "expiresAt",created_at as "createdAt",updated_at as "updatedAt" from hotfoto_deliveries where user_id=$1 and project_id=$2 order by created_at desc',[userId,projectId]); return r.rows;
+}
+export async function getPublicDelivery(token) {
+  const tokenHash=crypto.createHash('sha256').update(String(token||'')).digest('hex'); const p=await getPool();
+  if(!p){ const files=await fs.readdir(path.join(DATA_DIR,'cloud-fallback')).catch(()=>[]); for(const f of files.filter(x=>x.startsWith('deliveries-')&&x.endsWith('.json'))){ const list=await read(f,[]); const hit=list.find(x=>x.tokenHash===tokenHash); if(hit) return hit; } return null; }
+  const r=await p.query('select id,project_id as "projectId",user_id as "userId",title,status,asset_ids as "assetIds",options,expires_at as "expiresAt" from hotfoto_deliveries where token_hash=$1',[tokenHash]);
+  const d=r.rows[0]; if(!d) return null; if(d.expiresAt && new Date(d.expiresAt).getTime()<=Date.now()) return {...d,status:'expired'}; return d;
 }

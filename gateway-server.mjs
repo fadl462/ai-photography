@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, getProject, listProjectAssets, updateProject, createAsset, getAsset, updateAssetMetadata } from './db.mjs';
+import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, getProject, listProjectAssets, updateProject, createAsset, getAsset, updateAssetMetadata, createDelivery, listDeliveries, getPublicDelivery } from './db.mjs';
 import { storageHealth, initiateMultipart, completeMultipart, abortMultipart, headObject, signedDownload } from './storage.mjs';
 
 const PORT = Number(process.env.PORT || 8787);
@@ -66,6 +66,9 @@ async function projectDetail(userId, projectId) { const project=await getProject
 async function projectAssets(userId, projectId) { return {ok:true, assets:await listProjectAssets(userId, projectId)}; }
 async function projectUpdate(body,userId) { return {ok:true, project:await updateProject(userId,String(body.projectId||''),body)}; }
 async function projectAsset(body,userId) { return {ok:true, asset:await createAsset(userId,String(body.projectId||''),{name:String(body.name||'asset'),mimeType:body.mimeType,bytes:body.bytes,metadata:body.metadata}) , storage:{provider:STORAGE_PROVIDER,bucket:STORAGE_BUCKET,endpoint:STORAGE_ENDPOINT,publicBase:STORAGE_PUBLIC_BASE||null}}; }
+async function deliveryCreate(body,userId) { return {ok:true, delivery:await createDelivery(userId,String(body.projectId||''),body)}; }
+async function deliveryList(body,userId) { return {ok:true, deliveries:await listDeliveries(userId,String(body.projectId||''))}; }
+async function publicDelivery(token) { const d=await getPublicDelivery(token); if(!d) throw new Error('DELIVERY_NOT_FOUND'); if(d.status==='expired') return {ok:true,delivery:d,assets:[]}; const assets=[]; for(const id of (d.assetIds||[])){ const asset=await getAsset(d.userId,id); if(!asset) continue; let download=null; if(asset.storageKey && storageHealth().enabled){ try { download=await signedDownload({key:asset.storageKey,expiresIn:300}); } catch {} } assets.push({...asset,download}); } return {ok:true,delivery:d,assets}; }
 
 const json = (res, status, body) => {
   const out = JSON.stringify(body);
@@ -382,15 +385,16 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v48.0',
+        version: 'v48.1',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL) }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL) }
       });
     }
     if (req.method === 'GET' && url.pathname === '/health/db') return json(res, 200, await dbHealth());
     if (req.method === 'GET' && url.pathname === '/health/storage') return json(res, 200, storageHealth());
+    if (req.method === 'GET' && url.pathname.startsWith('/share/')) return json(res, 200, await publicDelivery(url.pathname.slice('/share/'.length)));
     if (req.method === 'GET' && url.pathname === '/auth/me') { const session = await authenticate(req); return json(res, 200, { ok: true, user: { id: session.userId, email: session.email }, expiresAt: new Date(Number(session.expiresAt)).toISOString() }); }
     if (req.method === 'GET' && url.pathname === '/projects') return json(res, 200, await projectList((await authenticate(req)).userId));
     if (req.method === 'GET' && url.pathname.startsWith('/projects/')) { const session=await authenticate(req); const parts=url.pathname.split('/').filter(Boolean); const projectId=parts[1]; if(parts[2]==='assets') return json(res,200,await projectAssets(session.userId,projectId)); return json(res,200,await projectDetail(session.userId,projectId)); }
@@ -404,6 +408,8 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/projects/create') return json(res, 201, await projectCreate(body, session.userId));
     if (url.pathname === '/projects/update') return json(res, 200, await projectUpdate(body, session.userId));
     if (url.pathname === '/projects/assets') return json(res, 201, await projectAsset(body, session.userId));
+    if (url.pathname === '/delivery/create') return json(res, 201, await deliveryCreate(body, session.userId));
+    if (url.pathname === '/delivery/list') return json(res, 200, await deliveryList(body, session.userId));
     if (url.pathname === '/assets/multipart/init') return json(res, 201, await initMultipart(body, session.userId));
     if (url.pathname === '/assets/multipart/complete') return json(res, 200, await completeAssetUpload(body, session.userId));
     if (url.pathname === '/assets/multipart/abort') return json(res, 200, await abortAssetUpload(body, session.userId));

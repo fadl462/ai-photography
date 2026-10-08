@@ -76,3 +76,7 @@ V47.9 adds a PostgreSQL-backed persistence adapter with local fallback, account-
 
 ## V47.9 — Resumable Cloud Assets
 Original photographs can now be uploaded directly from the browser to S3-compatible object storage using authenticated multipart upload sessions and short-lived signed part URLs. See `CLOUD-UPLOADS-V47.9.md`. The gateway only creates/authorizes the upload and records asset metadata; it does not proxy the large image bytes.
+
+
+## V48.1 — Client Delivery & Proofing
+HotFoto now includes a private client-delivery layer: photographers can publish selected assets from a project as an expiring share link, with account/project ownership checks and short-lived signed object-storage downloads. The public gallery does not expose photographer account details. See `DELIVERY-CLIENT-GALLERY-V48.1.md`.
