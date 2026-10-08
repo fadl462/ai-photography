@@ -1280,3 +1280,19 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
 .studio-top-start .start-icon{width:16px;height:16px;font-size:8px}
 .studio-topbar .studio-top-start[hidden]{display:none}
 @media(max-width:900px){.studio-top-start{padding:8px 9px}.studio-top-start span:nth-child(2){display:none}.studio-top-start i{font-size:10px}}
+
+/* V39 — equal-height command actions */
+.studio-head-actions .studio-ghost-btn,
+.studio-head-actions .studio-start-btn{
+  height:39px;
+  min-height:39px;
+  box-sizing:border-box;
+}
+.studio-head-actions .studio-start-btn{
+  padding:0 16px;
+}
+.studio-head-actions .studio-start-btn .start-icon{
+  width:18px;
+  height:18px;
+  flex:0 0 18px;
+}
