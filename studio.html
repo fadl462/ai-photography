@@ -6,9 +6,9 @@
 <meta name="description" content="HotFoto AI Studio — autonomous photography production from upload to delivery.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=hotfoto46">
+<link rel="stylesheet" href="css/styles.css?v=hotfoto47">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script defer src="js/app.js?v=hotfoto46"></script>
+<script defer src="js/app.js?v=hotfoto47"></script>
 </head>
 <body class="hf-studio-body">
 <div class="noise"></div>
@@ -49,7 +49,7 @@
       <section class="studio-main">
         <div class="studio-topbar">
           <div class="project-id"><span class="status-pip"></span><div class="project-name-wrap"><button class="project-name-button" id="projectNameButton" type="button" title="Rename production"><b id="projectName">NEW PRODUCTION</b><span class="project-edit" aria-hidden="true">✎</span></button><input id="projectNameInput" class="project-name-input" type="text" maxlength="64" value="NEW PRODUCTION" aria-label="Production name" hidden><small id="projectMeta">Drop a shoot to begin</small></div></div>
-          <div class="studio-top-metrics"><span><b id="imageCount">0</b> FRAMES</span><span><b id="qualityScore">—</b> QUALITY</span><span><b id="styleScore">—</b> STYLE DNA</span><span><b id="consistencyScore">—</b> CONSISTENCY</span><button class="engine-map-btn" id="engineMapBtn" type="button">50 ENGINE CAPABILITIES</button></div><button class="studio-start-btn studio-top-start" id="startHotFotoDocked" hidden><span class="start-icon">✦</span><span>START HOTFOTO</span><i>↗</i></button>
+          <div class="studio-top-metrics"><span><b id="imageCount">0</b> FRAMES</span><span><b id="qualityScore">—</b> QUALITY</span><span><b id="styleScore">—</b> STYLE DNA</span><span><b id="consistencyScore">—</b> CONSISTENCY</span><button class="engine-map-btn" id="engineMapBtn" type="button">50 ENGINE CAPABILITIES</button><button class="engine-map-btn gateway-btn" id="gatewayBtn" type="button">AI GATEWAY</button></div><button class="studio-start-btn studio-top-start" id="startHotFotoDocked" hidden><span class="start-icon">✦</span><span>START HOTFOTO</span><i>↗</i></button>
           <button class="icon-btn" id="resetStudio" title="Reset">↺</button>
         </div>
 
@@ -148,6 +148,18 @@
   </section>
 </div>
 
+<div class="hf-engine-modal" id="gatewayModal" aria-hidden="true">
+  <div class="hf-modal-backdrop" data-gateway-close></div>
+  <div class="hf-engine-panel gateway-panel">
+    <div class="hf-engine-head"><div><span>HOTFOTO AI INFRASTRUCTURE</span><h2>AI Gateway</h2><p>Connect the Studio to a private model service without exposing provider keys in the browser.</p></div><button class="modal-close" data-gateway-close type="button">×</button></div>
+    <div class="gateway-grid">
+      <div class="gateway-card gateway-status-card"><span class="gateway-kicker">RUNTIME</span><strong id="gatewayState">LOCAL PROTOTYPE</strong><p id="gatewayStateText">Browser-side processing is active. No external model service is connected.</p><div class="gateway-pulse"><i></i><span id="gatewayLatency">—</span></div></div>
+      <div class="gateway-card"><span class="gateway-kicker">MODEL SERVICE</span><label class="gateway-field"><span>Gateway endpoint</span><input id="gatewayEndpoint" type="url" placeholder="https://your-domain.com/api/hotfoto" autocomplete="off"></label><p class="gateway-note">Use a server-side gateway. Do not put provider API keys into Studio JavaScript.</p><div class="gateway-actions"><button class="studio-start-btn compact" id="saveGateway" type="button">SAVE ENDPOINT ↗</button><button class="gateway-ghost" id="testGateway" type="button">TEST CONNECTION</button></div></div>
+    </div>
+    <div class="gateway-contract"><div><b>V47 MODEL CONTRACT</b><span>Plan · Understand · Cull · Develop · Retouch · Style · Quality · Deliver</span></div><em>SERVER-SIDE READY</em></div>
+    <div class="gateway-capabilities"><span>✓ scene understanding</span><span>✓ culling confidence</span><span>✓ Style DNA</span><span>✓ retouch</span><span>✓ generative editing</span><span>✓ Quality Guard</span></div>
+  </div>
+</div>
 <div class="hf-engine-modal" id="engineModal" aria-hidden="true">
   <div class="hf-engine-backdrop" data-engine-close></div>
   <section class="hf-engine-card" role="dialog" aria-modal="true" aria-labelledby="engineTitle">
