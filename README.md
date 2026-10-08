@@ -9,3 +9,7 @@ Workflow page upgraded with:
 - final-output frame visualization
 - responsive/mobile refinements
 - reduced-motion support
+
+
+## V35 — AI Studio production cockpit
+The Studio page is now an autonomous-production prototype: upload/drop frames, load a demo shoot, run the HotFoto production loop, inspect AI stages, compare original/HotFoto, select frames, and simulate delivery export.

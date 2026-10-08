@@ -1,1 +1,120 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Studio — HotFoto AI</title><meta name="description" content="HotFoto AI — intelligent photography production from RAW to remarkable."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/styles.css?v=hotfoto12"><script defer src="js/app.js?v=hotfoto12"></script></head><body><div class="noise"></div><header class="nav" id="top"><a class="brand" href="index.html"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></a><nav><a class="" href="platform.html">Platform</a><a class="" href="workflow.html">Workflow</a><a class="active" href="studio.html">AI Studio</a><a class="" href="pricing.html">Pricing</a></nav><div class="nav-actions"><button class="btn ghost" data-open="login">Sign in</button><a class="btn primary" href="studio.html">Launch Studio <span>↗</span></a></div><button class="menu-btn" id="menuBtn">☰</button></header><main><section class="studio-workspace"><div class="studio-bar"><div><span class="eyebrow">HOTFOTO AI / STUDIO</span><h1>Your photographic command centre.</h1><p>Import a photograph, direct the intelligence and review the result without leaving the studio.</p></div><a class="btn primary" href="index.html">Exit Studio ↗</a></div><div class="studio-shell"><aside class="studio-side"><a class="active" href="#">✦ AI Director</a><a href="#">◌ Culling</a><a href="#">◎ Beauty</a><a href="#">◇ Rescue</a><a href="#">⌁ Quality Guard</a><a href="#">▣ Delivery</a><div style="margin-top:30px;border-top:1px solid rgba(255,255,255,.08);padding-top:18px"><span class="eyebrow">PROJECT</span><strong style="display:block;margin-top:8px">Golden Hour / 014</strong><small style="display:block;color:#71869f;margin-top:6px">1,127 keepers · RAW</small></div></aside><section class="studio-canvas"><span class="canvas-badge">AI ONLINE · STYLE DNA 94%</span><div class="canvas-image"></div><div style="position:absolute;right:20px;bottom:20px;background:rgba(7,16,31,.8);border:1px solid rgba(255,255,255,.1);padding:10px 12px;border-radius:10px;font-size:10px;color:#9fb1c8">Original → HotFoto AI</div></section><aside class="studio-panel"><h3>AI Director</h3><div class="ai-prompt">Make this portrait feel more expensive. Protect skin texture, warm the highlights, deepen separation and remove the background distraction.</div><div class="analysis-row"><span>Exposure <b>92%</b></span><i style="width:92%"></i></div><div class="analysis-row"><span>Skin <b>88%</b></span><i style="width:88%"></i></div><div class="analysis-row"><span>Composition <b>94%</b></span><i style="width:94%"></i></div><div class="analysis-row"><span>Detail <b>81%</b></span><i style="width:81%"></i></div><button class="btn primary" style="width:100%;margin-top:22px" id="studioApply">Apply 7 improvements →</button><div id="studioStatus" style="display:none;margin-top:16px;padding:12px;border-radius:12px;background:rgba(0,229,255,.08);color:#7deeff;font-size:11px">✓ 7 decisions applied. Quality Guard: 96/100.</div></aside></div></section></main><footer><div class="brand"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></div><p>AI photography production, from RAW to remarkable.</p><div><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a href="pricing.html">Pricing</a><a href="studio.html">Studio</a></div><small>© 2026 HotFoto AI · Prototype</small></footer><div class="modal" id="loginModal"><div class="modal-backdrop"></div><div class="modal-card login-modal"><button class="modal-close">×</button><span class="brand-mark big">✦</span><span class="eyebrow">WELCOME BACK</span><h2>Enter your studio.</h2><p>Prototype access — no account required.</p><a class="btn primary full" href="studio.html">Continue to Studio →</a></div></div></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Studio — HotFoto AI</title>
+<meta name="description" content="HotFoto AI Studio — autonomous photography production from upload to delivery.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css?v=hotfoto35">
+<script defer src="js/app.js?v=hotfoto35"></script>
+</head>
+<body class="hf-studio-body">
+<div class="noise"></div>
+<header class="nav hf-studio-nav" id="top">
+  <a class="brand" href="index.html"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></a>
+  <div class="studio-nav-center"><span class="studio-live-dot"></span><span>AI STUDIO</span><b id="studioNavState">READY</b></div>
+  <div class="nav-actions"><button class="btn ghost" data-open="login">Sign in</button><a class="btn primary" href="workflow.html">Exit Studio <span>↗</span></a></div>
+  <button class="menu-btn" id="menuBtn">☰</button>
+</header>
+
+<main class="hf-studio">
+  <section class="studio-command">
+    <div class="studio-project-head">
+      <div>
+        <span class="eyebrow">HOTFOTO AI / AUTONOMOUS PRODUCTION</span>
+        <h1>Make it <em>remarkable.</em></h1>
+        <p>Upload a shoot. HotFoto understands the photographs, builds the edit, checks the result and prepares delivery.</p>
+      </div>
+      <div class="studio-head-actions">
+        <button class="studio-ghost-btn" id="demoBtn">Load demo shoot</button>
+        <button class="studio-start-btn" id="startHotFoto"><span class="start-icon">✦</span><span>START HOTFOTO</span><i>↗</i></button>
+      </div>
+    </div>
+
+    <div class="studio-app" id="studioApp">
+      <aside class="studio-rail">
+        <div class="rail-brand"><span>✦</span><div><b>HOTFOTO</b><small>PRODUCTION ENGINE</small></div></div>
+        <div class="rail-section-label">PRODUCTION</div>
+        <button class="rail-item active" data-view="overview"><span>01</span><b>Overview</b><i>⌁</i></button>
+        <button class="rail-item" data-view="cull"><span>02</span><b>AI Culling</b><i>◌</i></button>
+        <button class="rail-item" data-view="develop"><span>03</span><b>Develop</b><i>◒</i></button>
+        <button class="rail-item" data-view="retouch"><span>04</span><b>Retouch</b><i>◎</i></button>
+        <button class="rail-item" data-view="style"><span>05</span><b>Style DNA</b><i>✦</i></button>
+        <button class="rail-item" data-view="quality"><span>06</span><b>Quality Guard</b><i>✓</i></button>
+        <button class="rail-item" data-view="delivery"><span>07</span><b>Delivery</b><i>⇧</i></button>
+        <div class="rail-bottom"><span class="privacy-dot"></span><div><b>PRIVATE SESSION</b><small>Originals untouched</small></div></div>
+      </aside>
+
+      <section class="studio-main">
+        <div class="studio-topbar">
+          <div class="project-id"><span class="status-pip"></span><div><b id="projectName">NEW PRODUCTION</b><small id="projectMeta">Drop a shoot to begin</small></div></div>
+          <div class="studio-top-metrics"><span><b id="imageCount">0</b> FRAMES</span><span><b id="qualityScore">—</b> QUALITY</span><span><b id="styleScore">—</b> STYLE DNA</span></div>
+          <button class="icon-btn" id="resetStudio" title="Reset">↺</button>
+        </div>
+
+        <div class="studio-workarea">
+          <div class="canvas-zone" id="dropZone">
+            <input type="file" id="fileInput" accept="image/*,.dng,.tif,.tiff" multiple hidden>
+            <div class="empty-studio" id="emptyStudio">
+              <div class="upload-orbit"><div class="upload-core">✦</div><span></span><span></span><span></span></div>
+              <span class="eyebrow">READY FOR YOUR PHOTOGRAPHS</span>
+              <h2>Drop your shoot<br><em>here.</em></h2>
+              <p>RAW · JPEG · TIFF · PNG · DNG<br><span>Original files stay untouched.</span></p>
+              <button class="studio-upload-btn" id="uploadBtn">Choose photographs <span>↑</span></button>
+            </div>
+
+            <div class="photo-stage" id="photoStage" hidden>
+              <div class="canvas-status"><span class="studio-live-dot"></span><b id="canvasState">ANALYSIS READY</b><span id="canvasSubstate">MASTER VIEW</span></div>
+              <div class="photo-viewport" id="photoViewport">
+                <div class="demo-photo studio-photo" id="studioPhoto">
+                  <div class="demo-light"></div><div class="demo-subject"></div><div class="demo-ground"></div>
+                </div>
+                <div class="before-layer" id="beforeLayer"></div>
+                <div class="photo-vignette"></div>
+                <button class="compare-toggle" id="compareToggle">ORIGINAL <span>↔</span> HOTFOTO</button>
+                <div class="canvas-score"><small>QUALITY GUARD</small><strong id="canvasScore">—</strong><span>/ 100</span></div>
+              </div>
+              <div class="canvas-controls"><button class="canvas-control active" data-canvas="fit">FIT</button><button class="canvas-control" data-canvas="original">ORIGINAL</button><button class="canvas-control" data-canvas="processed">HOTFOTO</button></div>
+            </div>
+          </div>
+
+          <aside class="ai-command-panel">
+            <div class="ai-panel-head"><div><span class="eyebrow">AI DIRECTOR</span><h3 id="panelTitle">Waiting for a shoot</h3></div><span class="ai-online"><i></i> ONLINE</span></div>
+            <div class="ai-director-card" id="directorCard">
+              <div class="director-intro"><span>✦</span><div><b id="directorState">UPLOAD TO BEGIN</b><small id="directorHint">HotFoto will build the production plan automatically.</small></div></div>
+              <div class="director-prompt" id="directorPrompt">Once your images arrive, HotFoto will understand the scene, select the strongest frames, develop the RAW, refine people and objects, apply your signature, run Quality Guard and prepare delivery.</div>
+            </div>
+            <div class="ai-plan" id="aiPlan">
+              <div class="plan-head"><span>PRODUCTION PLAN</span><b id="planStatus">STANDBY</b></div>
+              <div class="plan-step" data-step="understand"><i>01</i><span><b>Understand</b><small>Scene · people · camera</small></span><em>WAIT</em></div>
+              <div class="plan-step" data-step="cull"><i>02</i><span><b>Cull with context</b><small>Focus · expression · composition</small></span><em>WAIT</em></div>
+              <div class="plan-step" data-step="develop"><i>03</i><span><b>Develop & color</b><small>Exposure · tone · color science</small></span><em>WAIT</em></div>
+              <div class="plan-step" data-step="retouch"><i>04</i><span><b>Refine</b><small>Skin · detail · background</small></span><em>WAIT</em></div>
+              <div class="plan-step" data-step="style"><i>05</i><span><b>Apply Style DNA</b><small>Signature · consistency</small></span><em>WAIT</em></div>
+              <div class="plan-step" data-step="quality"><i>06</i><span><b>Quality Guard</b><small>Artifacts · balance · finish</small></span><em>WAIT</em></div>
+              <div class="plan-step" data-step="delivery"><i>07</i><span><b>Prepare delivery</b><small>Master · web · social</small></span><em>WAIT</em></div>
+            </div>
+            <div class="director-footer"><button class="ai-text-btn" id="directorTextBtn">Tell HotFoto what you want <span>⌘K</span></button></div>
+          </aside>
+        </div>
+
+        <div class="studio-filmstrip" id="filmstrip">
+          <div class="filmstrip-label"><span>FRAMES</span><b id="keeperLabel">Awaiting upload</b></div>
+          <div class="thumbs" id="thumbs"><button class="thumb-empty" id="thumbUpload">+ Add</button></div>
+          <div class="film-actions"><button id="selectBest">✦ SELECT BEST</button><button id="clearFrames">CLEAR</button></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="studio-statusbar"><div><span class="status-pip"></span><b id="statusText">SYSTEM READY</b><small id="statusDetail">Your originals are never overwritten.</small></div><div class="status-progress"><span id="progressBar"></span></div><div class="status-right"><span id="progressText">0%</span><button id="exportBtn" disabled>EXPORT DELIVERY ↗</button></div></div>
+  </section>
+</main>
+
+<div class="studio-toast" id="studioToast"><span>✦</span><div><b id="toastTitle">HotFoto</b><small id="toastText">Ready.</small></div></div>
+
+<footer class="studio-footer"><div class="brand"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></div><p>AI photography production, from RAW to remarkable.</p><div><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a href="pricing.html">Pricing</a><a href="studio.html">Studio</a></div><small>© 2026 HotFoto AI · Prototype</small></footer>
+
+<div class="modal" id="loginModal"><div class="modal-backdrop"></div><div class="modal-card login-modal"><button class="modal-close">×</button><span class="brand-mark big">✦</span><span class="eyebrow">WELCOME BACK</span><h2>Enter your studio.</h2><p>Prototype access — no account required.</p><a class="btn primary full" href="studio.html">Continue to Studio →</a></div></div>
+</body>
+</html>
