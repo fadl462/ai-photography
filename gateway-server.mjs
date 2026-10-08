@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, updateProject, createAsset } from './db.mjs';
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -18,6 +19,10 @@ const MEMORY_DIR = process.env.HOTFOTO_MEMORY_DIR || path.join(process.cwd(), 'd
 const AUTH_DIR = process.env.HOTFOTO_AUTH_DIR || path.join(MEMORY_DIR, 'auth');
 const SESSION_TTL_MS = Number(process.env.HOTFOTO_SESSION_TTL_MS || 24 * 60 * 60 * 1000);
 const APP_ORIGIN = process.env.HOTFOTO_APP_ORIGIN || '*';
+const STORAGE_PROVIDER = process.env.HOTFOTO_STORAGE_PROVIDER || 'local';
+const STORAGE_BUCKET = process.env.HOTFOTO_STORAGE_BUCKET || '';
+const STORAGE_ENDPOINT = process.env.HOTFOTO_STORAGE_ENDPOINT || '';
+const STORAGE_PUBLIC_BASE = process.env.HOTFOTO_STORAGE_PUBLIC_BASE || '';
 
 
 const authPath = path.join(AUTH_DIR, 'accounts.json');
@@ -31,45 +36,32 @@ async function createAccount(body) {
   const email = normalizeEmail(body.email); const password = String(body.password || '');
   if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error('INVALID_EMAIL');
   if (password.length < 10) throw new Error('PASSWORD_MIN_10');
-  const accounts = await readJsonFile(authPath, {});
-  if (accounts[email]) throw new Error('ACCOUNT_EXISTS');
   const userId = `usr_${crypto.randomBytes(12).toString('hex')}`;
   const salt = crypto.randomBytes(16).toString('hex');
   const passwordHash = await scryptHash(password, salt);
-  accounts[email] = { userId, email, passwordHash, salt, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-  await writeJsonFile(authPath, accounts);
-  return issueSession(accounts[email]);
-}
-async function issueSession(account) {
-  const token = crypto.randomBytes(32).toString('base64url');
-  const sessions = await readJsonFile(sessionsPath, {});
-  const now = Date.now();
-  for (const [k, v] of Object.entries(sessions)) if (Number(v.expiresAt) <= now) delete sessions[k];
-  sessions[hashToken(token)] = { userId: account.userId, email: account.email, createdAt: new Date(now).toISOString(), expiresAt: now + SESSION_TTL_MS };
-  await writeJsonFile(sessionsPath, sessions);
-  return { ok: true, token, user: { id: account.userId, email: account.email }, expiresAt: new Date(now + SESSION_TTL_MS).toISOString() };
-}
-async function login(body) {
-  const email = normalizeEmail(body.email); const password = String(body.password || '');
-  const accounts = await readJsonFile(authPath, {}); const account = accounts[email];
-  if (!account) throw new Error('INVALID_CREDENTIALS');
-  const candidate = await scryptHash(password, account.salt);
-  if (!crypto.timingSafeEqual(Buffer.from(candidate, 'hex'), Buffer.from(account.passwordHash, 'hex'))) throw new Error('INVALID_CREDENTIALS');
+  const account = await createUser({ id:userId, email, passwordHash, salt });
   return issueSession(account);
 }
+async function issueSession(account) {
+  const token = crypto.randomBytes(32).toString('base64url'); const now=Date.now();
+  await saveSession({ tokenHash:hashToken(token), userId:account.userId, email:account.email, createdAt:new Date(now).toISOString(), expiresAt:now+SESSION_TTL_MS });
+  return { ok:true, token, user:{id:account.userId,email:account.email}, expiresAt:new Date(now+SESSION_TTL_MS).toISOString() };
+}
+async function login(body) {
+  const email=normalizeEmail(body.email); const password=String(body.password||''); const account=await findUser(email);
+  if(!account) throw new Error('INVALID_CREDENTIALS'); const candidate=await scryptHash(password,account.salt);
+  if(!crypto.timingSafeEqual(Buffer.from(candidate,'hex'),Buffer.from(account.passwordHash,'hex'))) throw new Error('INVALID_CREDENTIALS'); return issueSession(account);
+}
 async function authenticate(req) {
-  const header = String(req.headers.authorization || '');
-  const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
-  if (!token) throw new Error('AUTH_REQUIRED');
-  const sessions = await readJsonFile(sessionsPath, {}); const session = sessions[hashToken(token)];
-  if (!session || Number(session.expiresAt) <= Date.now()) throw new Error('AUTH_EXPIRED');
-  return session;
+  const header=String(req.headers.authorization||''); const token=header.startsWith('Bearer ')?header.slice(7).trim():''; if(!token) throw new Error('AUTH_REQUIRED');
+  const session=await getSession(hashToken(token)); if(!session || Number(session.expiresAt)<=Date.now()){ if(session) await deleteSession(hashToken(token)); throw new Error('AUTH_EXPIRED'); } return session;
 }
-async function logout(req) {
-  const header = String(req.headers.authorization || ''); const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
-  if (token) { const sessions = await readJsonFile(sessionsPath, {}); delete sessions[hashToken(token)]; await writeJsonFile(sessionsPath, sessions); }
-  return { ok: true };
-}
+async function logout(req) { const header=String(req.headers.authorization||''); const token=header.startsWith('Bearer ')?header.slice(7).trim():''; if(token) await deleteSession(hashToken(token)); return {ok:true}; }
+
+async function projectCreate(body, userId) { return {ok:true, project:await createProject(userId,body)}; }
+async function projectList(userId) { return {ok:true, projects:await listProjects(userId)}; }
+async function projectUpdate(body,userId) { return {ok:true, project:await updateProject(userId,String(body.projectId||''),body)}; }
+async function projectAsset(body,userId) { return {ok:true, asset:await createAsset(userId,String(body.projectId||''),{name:String(body.name||'asset'),mimeType:body.mimeType,bytes:body.bytes,metadata:body.metadata}) , storage:{provider:STORAGE_PROVIDER,bucket:STORAGE_BUCKET,endpoint:STORAGE_ENDPOINT,publicBase:STORAGE_PUBLIC_BASE||null}}; }
 
 const json = (res, status, body) => {
   const out = JSON.stringify(body);
@@ -140,51 +132,14 @@ const systemRules = `You are HotFoto AI's photographic intelligence engine. You 
 
 const safeProfileId = value => String(value || 'default').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || 'default';
 const memoryPath = profileId => path.join(MEMORY_DIR, `profile-${safeProfileId(profileId)}.json`);
-const defaultMemory = profileId => ({ profileId: safeProfileId(profileId), version: 2, styleDNA: null, preferences: {}, feedback: { approved: 0, rejected: 0, edited: 0 }, projects: [], decisions: [], updatedAt: new Date().toISOString() });
-async function readMemory(profileId) {
-  try { return JSON.parse(await fs.readFile(memoryPath(profileId), 'utf8')); }
-  catch { return defaultMemory(profileId); }
-}
-async function writeMemory(memory) {
-  await fs.mkdir(MEMORY_DIR, { recursive: true });
-  memory.updatedAt = new Date().toISOString();
-  await fs.writeFile(memoryPath(memory.profileId), JSON.stringify(memory, null, 2), 'utf8');
-  return memory;
-}
-async function getMemory(body) {
-  const memory = await readMemory(body.profileId);
-  return { ok: true, ...memory };
-}
-async function saveStyleMemory(body) {
-  if (!body.styleDNA) throw new Error('STYLE_DNA_REQUIRED');
-  const memory = await readMemory(body.profileId);
-  memory.styleDNA = body.styleDNA;
-  memory.decisions = [{ type: 'style-dna-learned', project: body.project || null, references: body.references || body.styleDNA.references || null, at: new Date().toISOString() }, ...memory.decisions].slice(0, 50);
-  return writeMemory(memory);
-}
-async function saveFeedback(body) {
-  const memory = await readMemory(body.profileId);
-  const action = ['approved','rejected','edited'].includes(body.action) ? body.action : 'edited';
-  memory.feedback[action] = Number(memory.feedback[action] || 0) + 1;
-  memory.decisions = [{ type: 'photographer-feedback', action, frameName: body.frameName || null, project: body.project || null, note: String(body.note || '').slice(0, 500), at: new Date().toISOString() }, ...memory.decisions].slice(0, 100);
-  return writeMemory(memory);
-}
-async function savePreference(body) {
-  const memory = await readMemory(body.profileId);
-  const key = String(body.key || '').trim().slice(0, 80);
-  if (!key) throw new Error('PREFERENCE_KEY_REQUIRED');
-  memory.preferences[key] = { value: body.value ?? null, confidence: Math.max(0, Math.min(1, Number(body.confidence ?? 0.7))), source: body.source || 'photographer', updatedAt: new Date().toISOString() };
-  memory.decisions = [{ type: 'preference-learned', key, project: body.project || null, at: new Date().toISOString() }, ...memory.decisions].slice(0, 100);
-  return writeMemory(memory);
-}
-async function saveProjectDecision(body) {
-  const memory = await readMemory(body.profileId);
-  const project = String(body.project || 'UNTITLED').slice(0, 120);
-  const record = { project, shootProfile: body.shootProfile || 'auto', outcome: body.outcome || 'completed', quality: Number(body.quality || 0) || null, keepers: Number(body.keepers || 0) || null, frames: Number(body.frames || 0) || null, styleScore: Number(body.styleScore || 0) || null, at: new Date().toISOString() };
-  memory.projects = [record, ...(memory.projects || [])].slice(0, 30);
-  memory.decisions = [{ type: 'project-outcome', ...record }, ...memory.decisions].slice(0, 100);
-  return writeMemory(memory);
-}
+const defaultMemory = profileId => ({ profileId: safeProfileId(profileId), version: 3, styleDNA:null, preferences:{}, feedback:{approved:0,rejected:0,edited:0}, projects:[], decisions:[], updatedAt:new Date().toISOString() });
+async function readMemory(profileId) { const m=await getProfile(profileId); return {...defaultMemory(profileId),...m,profileId:safeProfileId(profileId)}; }
+async function writeMemory(memory) { memory.updatedAt=new Date().toISOString(); await saveProfile(memory.profileId,()=>memory); return memory; }
+async function getMemory(body) { return {ok:true,...await readMemory(body.profileId)}; }
+async function saveStyleMemory(body) { const memory=await readMemory(body.profileId); memory.styleDNA=body.styleDNA; memory.decisions=[{type:'style-dna-learned',project:body.project||null,references:body.references||body.styleDNA?.references||null,at:new Date().toISOString()},...memory.decisions].slice(0,100); return writeMemory(memory); }
+async function saveFeedback(body) { const memory=await readMemory(body.profileId); const action=['approved','rejected','edited'].includes(body.action)?body.action:'edited'; memory.feedback[action]=Number(memory.feedback[action]||0)+1; memory.decisions=[{type:'photographer-feedback',action,frameName:body.frameName||null,project:body.project||null,note:String(body.note||'').slice(0,500),at:new Date().toISOString()},...memory.decisions].slice(0,200); return writeMemory(memory); }
+async function savePreference(body) { const memory=await readMemory(body.profileId); const key=String(body.key||'').slice(0,100); if(!key) throw new Error('PREFERENCE_KEY_REQUIRED'); memory.preferences[key]={value:body.value??null,confidence:Math.max(0,Math.min(1,Number(body.confidence??0.7))),source:body.source||'photographer',updatedAt:new Date().toISOString()}; memory.decisions=[{type:'preference-learned',key,project:body.project||null,at:new Date().toISOString()},...memory.decisions].slice(0,200); return writeMemory(memory); }
+async function saveProjectDecision(body) { const memory=await readMemory(body.profileId); const project=String(body.project||'UNTITLED').slice(0,120); const record={project,shootProfile:body.shootProfile||'auto',outcome:body.outcome||'completed',quality:Number(body.quality||0)||null,keepers:Number(body.keepers||0)||null,frames:Number(body.frames||0)||null,styleScore:Number(body.styleScore||0)||null,at:new Date().toISOString()}; memory.projects=[record,...(memory.projects||[]).filter(x=>x.project!==project)].slice(0,30); memory.decisions=[{type:'project-outcome',...record},...memory.decisions].slice(0,200); await writeMemory(memory); return {ok:true,...memory}; }
 async function memorySummary(body) {
   const memory = await readMemory(body.profileId);
   const f = memory.feedback || {};
@@ -385,21 +340,26 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v47.7',
+        version: 'v47.8',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: Boolean(STORAGE_BUCKET), multiDeviceMemory: Boolean(process.env.DATABASE_URL) }
       });
     }
+    if (req.method === 'GET' && url.pathname === '/health/db') return json(res, 200, await dbHealth());
+    if (req.method === 'GET' && url.pathname === '/auth/me') { const session = await authenticate(req); return json(res, 200, { ok: true, user: { id: session.userId, email: session.email }, expiresAt: new Date(Number(session.expiresAt)).toISOString() }); }
+    if (req.method === 'GET' && url.pathname === '/projects') return json(res, 200, await projectList((await authenticate(req)).userId));
     if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
     const body = await readBody(req);
     if (url.pathname === '/auth/register') return json(res, 201, await createAccount(body));
     if (url.pathname === '/auth/login') return json(res, 200, await login(body));
     if (url.pathname === '/auth/logout') return json(res, 200, await logout(req));
-    if (url.pathname === '/auth/me') { const session = await authenticate(req); return json(res, 200, { ok: true, user: { id: session.userId, email: session.email }, expiresAt: new Date(session.expiresAt).toISOString() }); }
     const session = await authenticate(req);
     body.profileId = session.userId;
+    if (url.pathname === '/projects/create') return json(res, 201, await projectCreate(body, session.userId));
+    if (url.pathname === '/projects/update') return json(res, 200, await projectUpdate(body, session.userId));
+    if (url.pathname === '/projects/assets') return json(res, 201, await projectAsset(body, session.userId));
     if (url.pathname === '/plan') return json(res, 200, await plan(body));
     if (url.pathname === '/analyze') return json(res, 200, await analyze(body));
     if (url.pathname === '/quality') return json(res, 200, await quality(body));
@@ -422,4 +382,4 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, HOST, () => console.log(`HotFoto AI Gateway listening on ${HOST}:${PORT}`));
+ensureSchema().then(() => server.listen(PORT, HOST, () => console.log(`HotFoto AI Gateway listening on ${HOST}:${PORT}`))).catch(err => { console.error('Schema initialization failed:', err); process.exit(1); });

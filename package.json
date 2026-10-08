@@ -1,9 +1,16 @@
 {
   "name": "hotfoto-ai-gateway",
-  "version": "47.7.0",
+  "version": "47.8.0",
   "private": true,
   "type": "module",
-  "scripts": { "start": "node gateway-server.mjs" },
-  "engines": { "node": ">=20" },
-  "dependencies": { "sharp": "^0.34.3" }
+  "scripts": {
+    "start": "node gateway-server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "sharp": "^0.34.3",
+    "pg": "^8.16.3"
+  }
 }

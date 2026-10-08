@@ -53,3 +53,6 @@ Memory endpoints: `POST /memory`, `POST /memory/style`, `POST /memory/feedback`.
 
 ## V47.7 — Account Foundation
 Authenticated photographer accounts now scope persistent Style DNA, feedback and project memory. Passwords use server-side scrypt hashing; sessions are expiring bearer tokens stored only as hashes on the gateway. See `ACCOUNT-SECURITY-V47.7.md`. This is a secure foundation for migration to a managed production database, not a claim that the included JSON store is the final SaaS persistence layer.
+
+## V47.8 — Cloud Data Architecture
+V47.8 adds a PostgreSQL-backed persistence adapter with local fallback, account-scoped project records, asset metadata, and a cloud-storage boundary. See `CLOUD-DATA-ARCHITECTURE-V47.8.md`.

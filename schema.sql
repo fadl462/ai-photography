@@ -1,0 +1,2 @@
+-- HotFoto AI V47.8 PostgreSQL schema. The gateway also auto-creates these tables on boot.
+-- Run manually if your deployment pipeline manages migrations separately.
