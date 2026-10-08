@@ -192,3 +192,73 @@ body.hf-projects-page .frame-front:after{
 }
 body.hf-projects-page .frame-front .frame-mark{bottom:28px}
 body.hf-projects-page .visual-label.label-project b:before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#5ce0ff;box-shadow:0 0 10px #5ce0ff;margin:0 6px 1px 0}
+
+/* V49.9 — site-wide typography sync + premium Projects polish */
+body.hf-projects-page .hero-kicker{
+  font:700 9px/1.2 "Space Grotesk",sans-serif !important;
+  letter-spacing:.16em !important;
+  text-transform:uppercase !important;
+  color:#7f8a9b !important;
+}
+body.hf-projects-page .hero-kicker span{
+  width:22px !important;
+  height:1px !important;
+  flex:0 0 22px;
+}
+body.hf-projects-page .project-hero h1{
+  letter-spacing:-.072em !important;
+}
+body.hf-projects-page .project-hero p{
+  max-width:610px !important;
+  color:#8d96a4 !important;
+}
+body.hf-projects-page .hero-visual{
+  transform:translateY(-4px);
+}
+body.hf-projects-page .frame-stack{
+  width:360px !important;
+  height:350px !important;
+  transform:translate(-50%,-50%) rotate(-2deg) !important;
+}
+body.hf-projects-page .photo-frame{
+  width:188px !important;
+  height:262px !important;
+  padding:6px !important;
+  border-radius:4px !important;
+}
+body.hf-projects-page .frame-back{left:26px!important;top:18px!important;transform:rotate(-9deg)!important;opacity:.42!important}
+body.hf-projects-page .frame-mid{left:76px!important;top:2px!important;transform:rotate(5deg)!important;opacity:.68!important}
+body.hf-projects-page .frame-front{left:112px!important;top:32px!important;transform:rotate(-1.5deg)!important}
+body.hf-projects-page .frame-front:after{
+  content:"EDITORIAL • PORTRAIT • LOCATION" !important;
+  letter-spacing:.12em !important;
+  font-size:5.5px !important;
+}
+body.hf-projects-page .orbit-a{width:390px!important;height:170px!important;opacity:.72}
+body.hf-projects-page .orbit-b{width:255px!important;height:320px!important;opacity:.55}
+body.hf-projects-page .label-project{
+  top:10px!important;
+  right:2%!important;
+}
+body.hf-projects-page .label-flow{
+  left:0!important;
+  bottom:28px!important;
+}
+body.hf-projects-page .workspace-toolbar{
+  margin-top:0!important;
+  border-radius:15px!important;
+}
+body.hf-projects-page .project-list-panel,
+body.hf-projects-page .asset-panel{
+  border-radius:18px!important;
+}
+body.hf-projects-page .production-intro{
+  border-color:rgba(91,213,255,.10)!important;
+}
+body.hf-projects-page .project-principles{
+  border-radius:15px!important;
+}
+@media(max-width:760px){
+  body.hf-projects-page .hero-kicker{font-size:8px!important;letter-spacing:.14em!important}
+  body.hf-projects-page .frame-stack{transform:translate(-50%,-50%) scale(.82)!important}
+}

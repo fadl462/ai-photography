@@ -1,0 +1,15 @@
+/* HotFoto AI V49.9 — canonical navigation spacing */
+header.nav nav{
+  display:flex;
+  align-items:center;
+  gap:28px;
+  flex-wrap:nowrap;
+}
+header.nav nav a{white-space:nowrap}
+@media(max-width:920px){
+  header.nav nav{gap:16px}
+}
+@media(max-width:760px){
+  header.nav nav{display:none}
+  header.nav .menu-btn{display:flex}
+}
