@@ -1,3 +1,22 @@
+# HotFoto AI — V48.2
+
+V48.2 adds two-way client proofing to the cloud production platform.
+
+## Production loop
+Understand → Cull → Develop → Style DNA → Quality Guard → Self-Correct → Deliver → Client Proof → Photographer Review → Finalize
+
+## V48.2
+- Private expiring client deliveries
+- Client favorites and final selections
+- Frame-specific comments
+- One-time proof submission
+- Photographer proof review
+- Account/project/asset ownership enforcement
+- PostgreSQL persistence with local development fallback
+- Original/master files remain immutable
+
+See `PROOFING-CLIENT-APPROVALS-V48.2.md` for the proofing contract.
+
 # HotFoto AI V48 — Project Workspace
 
 V48 adds the persistent photographer workspace and cloud asset browser on top of the V47.9 secure resumable-upload architecture.

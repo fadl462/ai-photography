@@ -66,6 +66,17 @@ export async function ensureSchema() {
     );
     create index if not exists hotfoto_deliveries_project_idx on hotfoto_deliveries(project_id, created_at desc);
     create index if not exists hotfoto_deliveries_token_idx on hotfoto_deliveries(token_hash);
+    create table if not exists hotfoto_proof_actions (
+      id text primary key, delivery_id text not null references hotfoto_deliveries(id) on delete cascade,
+      asset_id text, client_key text not null, action text not null, value jsonb, comment text,
+      client_name text, client_email text, created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+    );
+    create unique index if not exists hotfoto_proof_action_unique_idx on hotfoto_proof_actions(delivery_id, asset_id, client_key, action);
+    create index if not exists hotfoto_proof_delivery_idx on hotfoto_proof_actions(delivery_id, created_at desc);
+    alter table hotfoto_deliveries add column if not exists proof_status text not null default 'open';
+    alter table hotfoto_deliveries add column if not exists client_name text;
+    alter table hotfoto_deliveries add column if not exists client_email text;
+    alter table hotfoto_deliveries add column if not exists submitted_at timestamptz;
   `);
   return true;
 }
@@ -202,20 +213,57 @@ export async function createDelivery(userId, projectId, body) {
   if(expiresAt && Number.isNaN(expiresAt.getTime())) throw new Error('INVALID_EXPIRY');
   if(!p){
     const own=await getProject(userId,projectId); if(!own) throw new Error('PROJECT_NOT_FOUND');
-    const list=await read(`deliveries-${userId}.json`,[]); const item={id,projectId,userId,title,status:'published',assetIds,options,expiresAt:expiresAt?.toISOString()||null,tokenHash,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    const list=await read(`deliveries-${userId}.json`,[]); const item={id,projectId,userId,title,status:'published',proofStatus:'open',clientName:null,clientEmail:null,submittedAt:null,assetIds,options,expiresAt:expiresAt?.toISOString()||null,tokenHash,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
     list.unshift(item); await write(`deliveries-${userId}.json`,list.slice(0,100)); return {...item,token:rawToken};
   }
   const own=await p.query('select 1 from hotfoto_projects where id=$1 and user_id=$2',[projectId,userId]); if(!own.rowCount) throw new Error('PROJECT_NOT_FOUND');
   await p.query('insert into hotfoto_deliveries(id,project_id,user_id,token_hash,title,asset_ids,options,expires_at) values($1,$2,$3,$4,$5,$6,$7,$8)',[id,projectId,userId,tokenHash,title,JSON.stringify(assetIds),JSON.stringify(options),expiresAt]);
-  return {id,projectId,userId,title,status:'published',assetIds,options,expiresAt:expiresAt?.toISOString()||null,createdAt:new Date().toISOString(),token:rawToken};
+  return {id,projectId,userId,title,status:'published',proofStatus:'open',clientName:null,clientEmail:null,submittedAt:null,assetIds,options,expiresAt:expiresAt?.toISOString()||null,createdAt:new Date().toISOString(),token:rawToken};
 }
 export async function listDeliveries(userId, projectId) {
   const p=await getPool(); if(!p){ const list=await read(`deliveries-${userId}.json`,[]); return list.filter(x=>x.projectId===projectId); }
   const r=await p.query('select id,project_id as "projectId",title,status,asset_ids as "assetIds",options,expires_at as "expiresAt",created_at as "createdAt",updated_at as "updatedAt" from hotfoto_deliveries where user_id=$1 and project_id=$2 order by created_at desc',[userId,projectId]); return r.rows;
 }
+export async function getProofing(delivery) {
+  const p=await getPool();
+  if(!p){ const list=await read(`proof-${delivery.id}.json`,[]); return {proofStatus:delivery.proofStatus||'open',clientName:delivery.clientName||null,clientEmail:delivery.clientEmail||null,submittedAt:delivery.submittedAt||null,actions:list}; }
+  const r=await p.query('select id,asset_id as "assetId",client_key as "clientKey",action,value,comment,client_name as "clientName",client_email as "clientEmail",created_at as "createdAt",updated_at as "updatedAt" from hotfoto_proof_actions where delivery_id=$1 order by created_at asc',[delivery.id]);
+  return {proofStatus:delivery.proofStatus||'open',clientName:delivery.clientName||null,clientEmail:delivery.clientEmail||null,submittedAt:delivery.submittedAt||null,actions:r.rows};
+}
+export async function saveProofAction(token, body) {
+  const tokenHash=crypto.createHash('sha256').update(String(token||'')).digest('hex'); const p=await getPool();
+  const delivery=await getPublicDelivery(token); if(!delivery || delivery.status==='expired') throw new Error('DELIVERY_NOT_FOUND');
+  if(delivery.proofStatus==='submitted') throw new Error('PROOFING_SUBMITTED');
+  const action=String(body.action||'').slice(0,40); if(!['favorite','select','comment'].includes(action)) throw new Error('INVALID_PROOF_ACTION');
+  const assetId=body.assetId?String(body.assetId):null; if(action!=='comment' && !assetId) throw new Error('ASSET_REQUIRED');
+  if(assetId && !(delivery.assetIds||[]).map(String).includes(assetId)) throw new Error('ASSET_NOT_IN_DELIVERY');
+  const clientKey=String(body.clientKey||'').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80)||'anonymous';
+  const value=body.value===undefined?null:body.value; const comment=String(body.comment||'').slice(0,1200); const clientName=String(body.clientName||'').slice(0,120); const clientEmail=String(body.clientEmail||'').slice(0,160);
+  if(!p){ const list=await read(`proof-${delivery.id}.json`,[]); const idx=list.findIndex(x=>x.assetId===assetId&&x.clientKey===clientKey&&x.action===action); const item={id:`pfa_${crypto.randomBytes(8).toString('hex')}`,assetId,clientKey,action,value,comment,clientName:clientName||null,clientEmail:clientEmail||null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}; if(idx>=0) list[idx]=item; else list.push(item); await write(`proof-${delivery.id}.json`,list); return item; }
+  const id=`pfa_${crypto.randomBytes(8).toString('hex')}`;
+  const r=await p.query(`insert into hotfoto_proof_actions(id,delivery_id,asset_id,client_key,action,value,comment,client_name,client_email) values($1,$2,$3,$4,$5,$6,$7,$8,$9)
+    on conflict(delivery_id,asset_id,client_key,action) do update set value=excluded.value,comment=excluded.comment,client_name=excluded.client_name,client_email=excluded.client_email,updated_at=now()
+    returning id,asset_id as "assetId",client_key as "clientKey",action,value,comment,client_name as "clientName",client_email as "clientEmail",created_at as "createdAt",updated_at as "updatedAt"`,[id,delivery.id,assetId,clientKey,action,value,comment,clientName||null,clientEmail||null]);
+  return r.rows[0];
+}
+export async function submitProofing(token, body) {
+  const delivery=await getPublicDelivery(token); if(!delivery || delivery.status==='expired') throw new Error('DELIVERY_NOT_FOUND');
+  if(delivery.proofStatus==='submitted') return {ok:true,proofStatus:'submitted',submittedAt:delivery.submittedAt};
+  const name=String(body.clientName||'').trim().slice(0,120); const email=String(body.clientEmail||'').trim().slice(0,160); if(!name) throw new Error('CLIENT_NAME_REQUIRED');
+  const submittedAt=new Date().toISOString(); const p=await getPool();
+  if(!p){ const pathName=`delivery-meta-${delivery.id}.json`; await write(pathName,{proofStatus:'submitted',clientName:name,clientEmail:email||null,submittedAt}); const list=await read(`deliveries-${delivery.userId}.json`,[]); const i=list.findIndex(x=>x.id===delivery.id); if(i>=0){list[i]={...list[i],proofStatus:'submitted',clientName:name,clientEmail:email||null,submittedAt}; await write(`deliveries-${delivery.userId}.json`,list);} return {ok:true,proofStatus:'submitted',clientName:name,clientEmail:email||null,submittedAt}; }
+  await p.query('update hotfoto_deliveries set proof_status=\'submitted\',client_name=$2,client_email=$3,submitted_at=$4,updated_at=now() where id=$1',[delivery.id,name,email||null,submittedAt]);
+  return {ok:true,proofStatus:'submitted',clientName:name,clientEmail:email||null,submittedAt};
+}
+export async function getDeliveryProofForOwner(userId, deliveryId) {
+  const p=await getPool();
+  if(!p){ const deliveries=await read(`deliveries-${userId}.json`,[]); const d=deliveries.find(x=>x.id===deliveryId); if(!d) throw new Error('DELIVERY_NOT_FOUND'); const actions=await read(`proof-${deliveryId}.json`,[]); return {...d,actions}; }
+  const r=await p.query('select id,project_id as "projectId",title,status,proof_status as "proofStatus",client_name as "clientName",client_email as "clientEmail",submitted_at as "submittedAt",asset_ids as "assetIds",options,expires_at as "expiresAt",created_at as "createdAt" from hotfoto_deliveries where id=$1 and user_id=$2',[deliveryId,userId]); if(!r.rowCount) throw new Error('DELIVERY_NOT_FOUND'); const d=r.rows[0]; const a=await p.query('select id,asset_id as "assetId",client_key as "clientKey",action,value,comment,client_name as "clientName",client_email as "clientEmail",created_at as "createdAt",updated_at as "updatedAt" from hotfoto_proof_actions where delivery_id=$1 order by created_at asc',[deliveryId]); return {...d,actions:a.rows};
+}
+
 export async function getPublicDelivery(token) {
   const tokenHash=crypto.createHash('sha256').update(String(token||'')).digest('hex'); const p=await getPool();
-  if(!p){ const files=await fs.readdir(path.join(DATA_DIR,'cloud-fallback')).catch(()=>[]); for(const f of files.filter(x=>x.startsWith('deliveries-')&&x.endsWith('.json'))){ const list=await read(f,[]); const hit=list.find(x=>x.tokenHash===tokenHash); if(hit) return hit; } return null; }
-  const r=await p.query('select id,project_id as "projectId",user_id as "userId",title,status,asset_ids as "assetIds",options,expires_at as "expiresAt" from hotfoto_deliveries where token_hash=$1',[tokenHash]);
+  if(!p){ const files=await fs.readdir(path.join(DATA_DIR,'cloud-fallback')).catch(()=>[]); for(const f of files.filter(x=>x.startsWith('deliveries-')&&x.endsWith('.json'))){ const list=await read(f,[]); const hit=list.find(x=>x.tokenHash===tokenHash); if(hit){ const meta=await read(`delivery-meta-${hit.id}.json`,{}); return {...hit,...meta}; } } return null; }
+  const r=await p.query('select id,project_id as "projectId",user_id as "userId",title,status,proof_status as "proofStatus",client_name as "clientName",client_email as "clientEmail",submitted_at as "submittedAt",asset_ids as "assetIds",options,expires_at as "expiresAt" from hotfoto_deliveries where token_hash=$1',[tokenHash]);
   const d=r.rows[0]; if(!d) return null; if(d.expiresAt && new Date(d.expiresAt).getTime()<=Date.now()) return {...d,status:'expired'}; return d;
 }
