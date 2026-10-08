@@ -1,3 +1,35 @@
+# HotFoto AI V47.6 — Persistent Photographer Intelligence
+
+V47.6 extends the V47.5 Photographer Intelligence layer into a persistent learning ledger.
+
+## New in V47.6
+- Persistent project outcome memory.
+- Explicit photographer feedback ledger: approved / rejected / edited.
+- Preference learning endpoint with confidence and source metadata.
+- Memory summary endpoint for Studio intelligence status.
+- AI Director planning now receives learned preferences and recent project outcomes.
+- Personalization threshold: HotFoto requires at least five explicit approval/rejection signals before treating feedback as a strong preference.
+- Studio Intelligence panel shows Style DNA, feedback signals, approval rate and recent productions.
+- Completed productions are recorded server-side when the gateway is connected.
+- Originals remain immutable; memory influences future decisions but never overrides image-specific judgment.
+
+## New gateway endpoints
+- `POST /memory` — complete profile memory
+- `POST /memory/summary` — compact intelligence summary
+- `POST /memory/style` — save Style DNA
+- `POST /memory/feedback` — record photographer feedback
+- `POST /memory/preference` — store an explicit preference signal
+- `POST /memory/project` — store a completed production outcome
+
+## Architecture
+Photographer → Style DNA → Project → Quality Guard → Explicit Feedback → Intelligence Ledger → Future AI Director Plans
+
+The system intentionally does not claim that a few clicks are enough to “train a model.” It stores structured preference signals that can later feed a real account-level learning system.
+
+## Validation
+- `node --check js/app.js` passed.
+- `node --check gateway-server.mjs` passed.
+- V47 capability map preserved.
 ## V47.4 — Style DNA + Self-Correction
 
 - Model-backed Style DNA learning from the strongest reference frames.

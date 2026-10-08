@@ -84,7 +84,7 @@ const systemRules = `You are HotFoto AI's photographic intelligence engine. You 
 
 const safeProfileId = value => String(value || 'default').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || 'default';
 const memoryPath = profileId => path.join(MEMORY_DIR, `profile-${safeProfileId(profileId)}.json`);
-const defaultMemory = profileId => ({ profileId: safeProfileId(profileId), version: 1, styleDNA: null, preferences: {}, feedback: { approved: 0, rejected: 0, edited: 0 }, decisions: [], updatedAt: new Date().toISOString() });
+const defaultMemory = profileId => ({ profileId: safeProfileId(profileId), version: 2, styleDNA: null, preferences: {}, feedback: { approved: 0, rejected: 0, edited: 0 }, projects: [], decisions: [], updatedAt: new Date().toISOString() });
 async function readMemory(profileId) {
   try { return JSON.parse(await fs.readFile(memoryPath(profileId), 'utf8')); }
   catch { return defaultMemory(profileId); }
@@ -110,8 +110,31 @@ async function saveFeedback(body) {
   const memory = await readMemory(body.profileId);
   const action = ['approved','rejected','edited'].includes(body.action) ? body.action : 'edited';
   memory.feedback[action] = Number(memory.feedback[action] || 0) + 1;
-  memory.decisions = [{ type: 'photographer-feedback', action, frameName: body.frameName || null, project: body.project || null, note: String(body.note || '').slice(0, 500), at: new Date().toISOString() }, ...memory.decisions].slice(0, 50);
+  memory.decisions = [{ type: 'photographer-feedback', action, frameName: body.frameName || null, project: body.project || null, note: String(body.note || '').slice(0, 500), at: new Date().toISOString() }, ...memory.decisions].slice(0, 100);
   return writeMemory(memory);
+}
+async function savePreference(body) {
+  const memory = await readMemory(body.profileId);
+  const key = String(body.key || '').trim().slice(0, 80);
+  if (!key) throw new Error('PREFERENCE_KEY_REQUIRED');
+  memory.preferences[key] = { value: body.value ?? null, confidence: Math.max(0, Math.min(1, Number(body.confidence ?? 0.7))), source: body.source || 'photographer', updatedAt: new Date().toISOString() };
+  memory.decisions = [{ type: 'preference-learned', key, project: body.project || null, at: new Date().toISOString() }, ...memory.decisions].slice(0, 100);
+  return writeMemory(memory);
+}
+async function saveProjectDecision(body) {
+  const memory = await readMemory(body.profileId);
+  const project = String(body.project || 'UNTITLED').slice(0, 120);
+  const record = { project, shootProfile: body.shootProfile || 'auto', outcome: body.outcome || 'completed', quality: Number(body.quality || 0) || null, keepers: Number(body.keepers || 0) || null, frames: Number(body.frames || 0) || null, styleScore: Number(body.styleScore || 0) || null, at: new Date().toISOString() };
+  memory.projects = [record, ...(memory.projects || [])].slice(0, 30);
+  memory.decisions = [{ type: 'project-outcome', ...record }, ...memory.decisions].slice(0, 100);
+  return writeMemory(memory);
+}
+async function memorySummary(body) {
+  const memory = await readMemory(body.profileId);
+  const f = memory.feedback || {};
+  const total = Number(f.approved || 0) + Number(f.rejected || 0);
+  const approvalRate = total ? Math.round(Number(f.approved || 0) / total * 100) : null;
+  return { ok: true, profileId: memory.profileId, styleDNA: memory.styleDNA ? { profileName: memory.styleDNA.profileName || 'Untitled Style', score: memory.styleDNA.score || null, confidence: memory.styleDNA.confidence || null, updatedAt: memory.updatedAt } : null, feedback: f, approvalRate, preferences: memory.preferences || {}, recentProjects: (memory.projects || []).slice(0, 8), learningSignals: { sampleSize: total, readyForPersonalization: total >= 5, message: total >= 5 ? 'HotFoto has enough explicit feedback to personalize decisions more aggressively.' : 'Collect at least 5 approval/rejection signals before treating feedback as a strong preference.' } };
 }
 
 
@@ -119,7 +142,9 @@ async function plan(body) {
   const memory = await readMemory(body.profileId);
   const learnedStyle = memory.styleDNA ? JSON.stringify(memory.styleDNA).slice(0, 7000) : 'No persistent Style DNA yet.';
   const feedback = JSON.stringify(memory.feedback || {});
-  const prompt = `${systemRules}\nCreate a production plan for this shoot. Profile: ${body.shootProfile || 'auto'}. Mode: ${body.mode || 'auto'}. Frames: ${body.frameCount || 0}. Photographer intent: ${body.intent || 'none'}. Persistent photographer intelligence: ${learnedStyle}. Historical feedback counts: ${feedback}. Use learned style as a preference, not a command, and preserve image-specific judgment. Return JSON with keys: profile, summary, priorities (array), reviewThreshold (0-1), styleScore (0-100), stages (array of {name,enabled,reason}), riskNotes (array).`;
+  const preferences = JSON.stringify(memory.preferences || {}).slice(0, 5000);
+  const recentProjects = JSON.stringify((memory.projects || []).slice(0, 5));
+  const prompt = `${systemRules}\nCreate a production plan for this shoot. Profile: ${body.shootProfile || 'auto'}. Mode: ${body.mode || 'auto'}. Frames: ${body.frameCount || 0}. Photographer intent: ${body.intent || 'none'}. Persistent photographer intelligence: ${learnedStyle}. Historical feedback counts: ${feedback}. Learned preferences: ${preferences}. Recent project outcomes: ${recentProjects}. Use learned intelligence as a preference, not a command, and preserve image-specific judgment. Return JSON with keys: profile, summary, priorities (array), reviewThreshold (0-1), styleScore (0-100), stages (array of {name,enabled,reason}), riskNotes (array).`;
   const response = await openAIResponses({
     model: PLANNER_MODEL,
     input: [{ role: 'user', content: [{ type: 'input_text', text: prompt }] }],
@@ -308,7 +333,7 @@ const server = http.createServer(async (req, res) => {
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true }
       });
     }
     if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
@@ -320,6 +345,9 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/memory') return json(res, 200, await getMemory(body));
     if (url.pathname === '/memory/style') return json(res, 200, await saveStyleMemory(body));
     if (url.pathname === '/memory/feedback') return json(res, 200, await saveFeedback(body));
+    if (url.pathname === '/memory/preference') return json(res, 200, await savePreference(body));
+    if (url.pathname === '/memory/project') return json(res, 200, await saveProjectDecision(body));
+    if (url.pathname === '/memory/summary') return json(res, 200, await memorySummary(body));
     if (url.pathname === '/self-correct') return json(res, 200, await selfCorrect(body));
     if (url.pathname === '/edit') return json(res, 200, await imageEdit(body));
     if (url.pathname === '/process') return json(res, 200, await processRequest(body));
