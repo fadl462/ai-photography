@@ -3,6 +3,7 @@ import { URL } from 'node:url';
 import sharp from 'sharp';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -14,12 +15,67 @@ const IMAGE_MODEL = process.env.HOTFOTO_IMAGE_MODEL || 'gpt-image-2';
 const MAX_BODY = Number(process.env.HOTFOTO_MAX_BODY || 28 * 1024 * 1024);
 const WORKER_MAX_EDGE = Number(process.env.HOTFOTO_WORKER_MAX_EDGE || 5000);
 const MEMORY_DIR = process.env.HOTFOTO_MEMORY_DIR || path.join(process.cwd(), 'data');
+const AUTH_DIR = process.env.HOTFOTO_AUTH_DIR || path.join(MEMORY_DIR, 'auth');
+const SESSION_TTL_MS = Number(process.env.HOTFOTO_SESSION_TTL_MS || 24 * 60 * 60 * 1000);
+const APP_ORIGIN = process.env.HOTFOTO_APP_ORIGIN || '*';
+
+
+const authPath = path.join(AUTH_DIR, 'accounts.json');
+const sessionsPath = path.join(AUTH_DIR, 'sessions.json');
+const normalizeEmail = value => String(value || '').trim().toLowerCase().slice(0, 160);
+const hashToken = token => crypto.createHash('sha256').update(token).digest('hex');
+const scryptHash = (password, salt) => new Promise((resolve, reject) => crypto.scrypt(password, salt, 64, { N: 16384, r: 8, p: 1 }, (err, key) => err ? reject(err) : resolve(key.toString('hex'))));
+async function readJsonFile(file, fallback) { try { return JSON.parse(await fs.readFile(file, 'utf8')); } catch { return fallback; } }
+async function writeJsonFile(file, value) { await fs.mkdir(path.dirname(file), { recursive: true }); await fs.writeFile(file, JSON.stringify(value, null, 2), 'utf8'); }
+async function createAccount(body) {
+  const email = normalizeEmail(body.email); const password = String(body.password || '');
+  if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error('INVALID_EMAIL');
+  if (password.length < 10) throw new Error('PASSWORD_MIN_10');
+  const accounts = await readJsonFile(authPath, {});
+  if (accounts[email]) throw new Error('ACCOUNT_EXISTS');
+  const userId = `usr_${crypto.randomBytes(12).toString('hex')}`;
+  const salt = crypto.randomBytes(16).toString('hex');
+  const passwordHash = await scryptHash(password, salt);
+  accounts[email] = { userId, email, passwordHash, salt, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  await writeJsonFile(authPath, accounts);
+  return issueSession(accounts[email]);
+}
+async function issueSession(account) {
+  const token = crypto.randomBytes(32).toString('base64url');
+  const sessions = await readJsonFile(sessionsPath, {});
+  const now = Date.now();
+  for (const [k, v] of Object.entries(sessions)) if (Number(v.expiresAt) <= now) delete sessions[k];
+  sessions[hashToken(token)] = { userId: account.userId, email: account.email, createdAt: new Date(now).toISOString(), expiresAt: now + SESSION_TTL_MS };
+  await writeJsonFile(sessionsPath, sessions);
+  return { ok: true, token, user: { id: account.userId, email: account.email }, expiresAt: new Date(now + SESSION_TTL_MS).toISOString() };
+}
+async function login(body) {
+  const email = normalizeEmail(body.email); const password = String(body.password || '');
+  const accounts = await readJsonFile(authPath, {}); const account = accounts[email];
+  if (!account) throw new Error('INVALID_CREDENTIALS');
+  const candidate = await scryptHash(password, account.salt);
+  if (!crypto.timingSafeEqual(Buffer.from(candidate, 'hex'), Buffer.from(account.passwordHash, 'hex'))) throw new Error('INVALID_CREDENTIALS');
+  return issueSession(account);
+}
+async function authenticate(req) {
+  const header = String(req.headers.authorization || '');
+  const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+  if (!token) throw new Error('AUTH_REQUIRED');
+  const sessions = await readJsonFile(sessionsPath, {}); const session = sessions[hashToken(token)];
+  if (!session || Number(session.expiresAt) <= Date.now()) throw new Error('AUTH_EXPIRED');
+  return session;
+}
+async function logout(req) {
+  const header = String(req.headers.authorization || ''); const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+  if (token) { const sessions = await readJsonFile(sessionsPath, {}); delete sessions[hashToken(token)]; await writeJsonFile(sessionsPath, sessions); }
+  return { ok: true };
+}
 
 const json = (res, status, body) => {
   const out = JSON.stringify(body);
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': APP_ORIGIN,
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
     'Cache-Control': 'no-store'
@@ -329,15 +385,21 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v47.3',
+        version: 'v47.7',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true }
       });
     }
     if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
     const body = await readBody(req);
+    if (url.pathname === '/auth/register') return json(res, 201, await createAccount(body));
+    if (url.pathname === '/auth/login') return json(res, 200, await login(body));
+    if (url.pathname === '/auth/logout') return json(res, 200, await logout(req));
+    if (url.pathname === '/auth/me') { const session = await authenticate(req); return json(res, 200, { ok: true, user: { id: session.userId, email: session.email }, expiresAt: new Date(session.expiresAt).toISOString() }); }
+    const session = await authenticate(req);
+    body.profileId = session.userId;
     if (url.pathname === '/plan') return json(res, 200, await plan(body));
     if (url.pathname === '/analyze') return json(res, 200, await analyze(body));
     if (url.pathname === '/quality') return json(res, 200, await quality(body));
