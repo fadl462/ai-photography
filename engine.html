@@ -1,149 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HotFoto OS — Intelligence Map</title>
-<meta name="description" content="HotFoto AI capability map, production architecture and release history.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=hotfoto48.14.5">
-<link rel="stylesheet" href="css/engine.css?v=hotfoto48.14.5">
-<script defer src="js/engine.js?v=hotfoto48.14.5"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="0;url=studio.html">
+  <title>HotFoto AI Studio</title>
+  <meta name="description" content="HotFoto AI Studio — faster photography production from upload to delivery.">
+  <script>
+    location.replace('studio.html');
+  </script>
 </head>
-<body class="hf-engine-page">
-<div class="noise"></div>
-<header class="nav hf-studio-nav">
-  <a class="brand" href="index.html"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></a>
-  <div class="studio-nav-center"><span class="studio-live-dot"></span><span>HOTFOTO OS</span><b>V48.14.5</b></div>
-  <div class="nav-actions"><a class="btn ghost" href="studio.html">← Studio</a><a class="btn primary" href="workflow.html">Workflow <span>↗</span></a></div>
-</header>
-
-<main class="os-shell">
-  <section class="os-hero">
-    <div class="os-hero-copy">
-      <span class="eyebrow">HOTFOTO AI / SYSTEM INTELLIGENCE</span>
-      <h1>Everything we've built.<br><em>One command map.</em></h1>
-      <p>See the HotFoto AI production engine, platform intelligence, creative systems and delivery infrastructure in one place — including what is live, wired, model-backed or planned.</p>
-      <div class="os-hero-actions"><a class="studio-start-btn" href="studio.html"><span class="start-icon">✦</span><span>OPEN STUDIO</span><i>↗</i></a><button class="os-ghost" id="jumpTimeline">VIEW BUILD HISTORY ↓</button></div>
-    </div>
-    <div class="os-architecture-stack">
-    <div class="os-architecture" aria-label="Interactive HotFoto OS architecture map">
-      <div class="arch-grid"></div>
-      <div class="arch-label arch-label-top">SYSTEM ARCHITECTURE <span>CONNECTED</span></div>
-      <svg class="arch-lines" viewBox="0 0 620 430" aria-hidden="true">
-        <path d="M310 215 L96 78 M310 215 L310 58 M310 215 L524 78 M310 215 L82 352 M310 215 L310 372 M310 215 L538 352" />
-        <path class="secondary" d="M310 215 L154 136 M310 215 L466 136 M310 215 L150 294 M310 215 L470 294" />
-      </svg>
-      <button class="arch-node workflow-node n-ingest" data-arch="ingest"><span>01</span><b>INGEST</b><small>Import · metadata</small></button>
-      <button class="arch-node workflow-node n-understand" data-arch="understand"><span>02</span><b>UNDERSTAND</b><small>Scene · people · story</small></button>
-      <button class="arch-node workflow-node n-cull" data-arch="cull"><span>03</span><b>CULL</b><small>Focus · keepers</small></button>
-      <button class="arch-node workflow-node n-create" data-arch="create"><span>04</span><b>CREATE</b><small>Develop · retouch</small></button>
-      <button class="arch-node workflow-node n-guard" data-arch="guard"><span>05</span><b>GUARD</b><small>Quality · confidence</small></button>
-      <button class="arch-node workflow-node n-deliver" data-arch="deliver"><span>06</span><b>DELIVER</b><small>Proof · export</small></button>
-      <button class="arch-node intel-node n-director" data-arch="director"><b>AI DIRECTOR</b></button>
-      <button class="arch-node intel-node n-dna" data-arch="dna"><b>STYLE DNA</b></button>
-      <button class="arch-node intel-node n-memory" data-arch="memory"><b>PROJECT MEMORY</b></button>
-      <button class="arch-node intel-node n-vision" data-arch="vision"><b>VISION</b></button>
-      <div class="arch-core" id="archCore" tabindex="0" role="button" aria-label="HotFoto Intelligence Core">
-        <span class="core-pulse"></span><strong>✦</strong><small>HOTFOTO<br>INTELLIGENCE CORE</small>
-      </div>
-    </div>
-    <div class="arch-readout" id="archReadout" aria-live="polite"><span>SELECT A SYSTEM</span><b>One production loop.</b><p>Click a node to inspect how that layer connects to the HotFoto OS.</p></div>
-    </div>
-  </section>
-
-  <section class="os-stats">
-    <div><strong id="totalCount">74</strong><span>CAPABILITIES TRACKED</span></div>
-    <div><strong id="liveCount">11</strong><span>LIVE CORE</span></div>
-    <div><strong id="wiredCount">20</strong><span>WIRED / WORKFLOW READY</span></div>
-    <div><strong id="modelCount">31</strong><span>MODEL / INTELLIGENCE LAYER</span></div>
-    <div><strong>10</strong><span>RELEASES / MILESTONES</span></div>
-  </section>
-
-  <section class="os-map-section" id="capabilities">
-    <div class="section-head"><div><span class="eyebrow">THE ENGINE</span><h2>Capability map</h2><p>One view of the production engine and everything connected to it.</p></div><div class="os-filters" id="filters"><button class="active" data-filter="all">ALL <b>74</b></button><button data-filter="live">LIVE <b>11</b></button><button data-filter="wired">WIRED <b>20</b></button><button data-filter="model">MODEL <b>31</b></button><button data-filter="planned">PLANNED <b>12</b></button></div></div>
-    <div class="os-stage-grid" id="capabilityGrid"></div>
-    <div class="capability-detail" id="capabilityDetail" aria-hidden="true">
-      <div class="detail-backdrop" data-close-detail></div>
-      <aside class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
-        <button class="detail-close" id="detailClose" aria-label="Close capability details">×</button>
-        <div class="detail-kicker" id="detailKicker">CAPABILITY</div>
-        <div class="detail-title-row"><h3 id="detailTitle">Capability</h3><span id="detailState" class="state state-wired">WIRED</span></div>
-        <p class="detail-purpose" id="detailPurpose"></p>
-        <div class="detail-grid">
-          <div><span>CONNECTED TO</span><b id="detailConnected"></b></div>
-          <div><span>INTELLIGENCE TYPE</span><b id="detailType"></b></div>
-          <div><span>INTRODUCED</span><b id="detailRelease"></b></div>
-          <div><span>NEXT UPGRADE</span><b id="detailNext"></b></div>
-        </div>
-        <div class="detail-note" id="detailNote"></div>
-      </aside>
-    </div>
-  </section>
-
-  <section class="os-flow">
-    <div class="flow-hero">
-      <div class="flow-hero-copy">
-        <span class="eyebrow">AUTONOMOUS PRODUCTION</span>
-        <h2>How the system <em>connects.</em></h2>
-        <p>HotFoto is designed as a production loop, not a collection of disconnected tools.</p>
-        <div class="flow-benefits">
-          <span class="active">✦ A connected pipeline</span><span>◈ Intelligence at every stage</span><span>⌁ Consistent quality</span><span>↗ Faster delivery</span>
-        </div>
-      </div>
-      <div class="flow-visual" aria-label="HotFoto production flow visualization">
-        <div class="flow-glow"></div><div class="flow-wave wave-one"></div><div class="flow-wave wave-two"></div>
-        <div class="flow-photo photo-one"><i></i><b>RAW</b></div>
-        <div class="flow-photo photo-two"><i></i><b>VISION</b></div>
-        <div class="flow-photo photo-three"><i></i><b>STYLE</b></div>
-        <div class="flow-photo photo-four"><i></i><b>DELIVER</b></div>
-        <div class="flow-ai">✦<small>AI</small></div>
-        <div class="flow-chip chip-deliver">✓ DELIVER</div>
-      </div>
-    </div>
-    <div class="flow-track">
-      <div class="flow-node"><span>01</span><b>INGEST</b><small>Import · metadata · protection</small></div><i>→</i><div class="flow-node"><span>02</span><b>UNDERSTAND</b><small>Scene · people · lighting · story</small></div><i>→</i><div class="flow-node"><span>03</span><b>CULL</b><small>Focus · expression · keepers</small></div><i>→</i><div class="flow-node"><span>04</span><b>CREATE</b><small>Develop · retouch · Style DNA</small></div><i>→</i><div class="flow-node"><span>05</span><b>GUARD</b><small>Artifacts · confidence · correction</small></div><i>→</i><div class="flow-node"><span>06</span><b>DELIVER</b><small>Proof · export · packages</small></div>
-    </div>
-    <div class="flow-loop">↻ <span>PROJECT MEMORY + PHOTOGRAPHER INTELLIGENCE feed the next production.</span></div>
-  </section>
-
-  <section class="os-timeline" id="timeline">
-    <div class="section-head"><div><span class="eyebrow">BUILD HISTORY</span><h2>From foundation to photography OS</h2><p>A concise record of the major HotFoto AI upgrades completed so far.</p></div></div>
-    <div class="timeline" id="timelineList"></div>
-  </section>
-
-  <section class="os-principles" aria-label="HotFoto OS principles">
-    <div class="principle-card principle-cyan">
-      <div class="principle-visual principle-originals" aria-hidden="true"><div class="visual-frame frame-back"></div><div class="visual-frame frame-mid"></div><div class="visual-frame frame-front"><span>RAW</span></div><i class="visual-lock">✦</i></div>
-      <div class="principle-meta"><span>01 / FOUNDATION</span><b>ORIGINALS</b></div>
-      <h3>Stay <em>untouched.</em></h3>
-      <p>Production is non-destructive. Masters remain protected while every edit, generation and export becomes a separate rendition.</p>
-      <div class="principle-footer"><span>MASTER PROTECTED</span><i>↗</i></div>
-    </div>
-    <div class="principle-card principle-violet">
-      <div class="principle-visual principle-ai" aria-hidden="true"><div class="ai-chip">AI</div><div class="ai-orbit orbit-a"></div><div class="ai-orbit orbit-b"></div><div class="ai-core">✦</div><span class="ai-node node-a">MODEL</span><span class="ai-node node-b">VISION</span><span class="ai-node node-c">RULES</span></div>
-      <div class="principle-meta"><span>02 / TRUST</span><b>TRANSPARENCY</b></div>
-      <h3>No fake <em>AI.</em></h3>
-      <p>Model-backed intelligence is clearly separated from browser-native and workflow-ready capabilities, so the system never pretends.</p>
-      <div class="principle-footer"><span>CAPABILITY STATE IS EXPLICIT</span><i>↗</i></div>
-    </div>
-    <div class="principle-card principle-teal">
-      <div class="principle-visual principle-memory" aria-hidden="true"><div class="memory-stack"><span>PROJECT MEMORY</span><span>STYLE DNA</span><span>FEEDBACK</span><span>DELIVERY</span></div><div class="memory-spark">✦</div></div>
-      <div class="principle-meta"><span>03 / LEARNING</span><b>INTELLIGENCE</b></div>
-      <h3>Intelligence <em>compounds.</em></h3>
-      <p>Project memory, explicit feedback, Style DNA and delivery signals can strengthen future decisions as the photographer works.</p>
-      <div class="principle-footer"><span>MEMORY → BETTER DECISIONS</span><i>↗</i></div>
-    </div>
-    <div class="principle-card principle-magenta">
-      <div class="principle-visual principle-loop" aria-hidden="true"><div class="loop-ring ring-outer"></div><div class="loop-ring ring-inner"></div><div class="loop-core">✦</div><span class="loop-node ln-a">CULL</span><span class="loop-node ln-b">CREATE</span><span class="loop-node ln-c">GUARD</span><span class="loop-node ln-d">DELIVER</span></div>
-      <div class="principle-meta"><span>04 / ORCHESTRATION</span><b>PRODUCTION LOOP</b></div>
-      <h3>One production <em>loop.</em></h3>
-      <p>Culling, editing, quality, story, delivery and campaign intelligence are designed to work together as one continuous system.</p>
-      <div class="principle-footer"><span>END-TO-END ORCHESTRATION</span><i>↗</i></div>
-    </div>
-  </section>
-</main>
-
-<footer class="studio-footer"><div class="brand"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></div><p>AI photography production, from RAW to remarkable.</p><div><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a href="projects.html">Projects</a><a href="pricing.html">Pricing</a><a href="studio.html">Studio</a></div><small>© 2026 HotFoto AI · V48.14.5 Intelligence Map</small></footer>
+<body>
+  <p>Opening HotFoto AI Studio…</p>
 </body>
 </html>
