@@ -1,23 +1,16 @@
-HotFoto AI V49.4 — Premium Projects Page
+HotFoto AI V49.5 — Cinematic Projects refinement
 
-Changed files:
+Replace:
 - projects.html
 - css/projects.css
 
-Upload both files to the matching locations in the repository.
+Keep existing js/projects.js.
 
-What changed:
-- Rebuilt the Projects hero to remove the washed-out/empty look.
-- Added a cinematic HotFoto production workspace visual.
-- Removed Social Studio from the main navigation.
-- Stronger hierarchy: create production → select shoot → inspect → deliver.
-- Premium dark workspace surfaces, glass treatment and subtle blue/violet intelligence accents.
-- Improved empty state with a clearer first-production action.
-- Added a compact workspace principles strip.
-- Preserved all existing IDs required by js/projects.js.
-- Preserved New Production modal and project functionality.
-- Added hero New Production and empty-state New Production shortcuts.
-- Cache-busted CSS/JS references to V49.4.
-
-Important:
-The ZIP does not replace js/projects.js. The existing projects.js should remain in place.
+This pass:
+- Removes the washed-out split-screen hero feeling.
+- Replaces the generic orbit-only visual with a CSS-built photography contact-sheet visual.
+- Keeps the premium dark/cinematic production workspace.
+- Removes technical gateway language from the hero.
+- Tightens hierarchy and visual continuity.
+- Preserves all existing Projects functionality and element IDs.
+- Main navigation remains photographer-first: Platform / Workflow / Projects / AI Studio / Pricing.
