@@ -1,16 +1,12 @@
-HotFoto AI V49.5 — Cinematic Projects refinement
+HotFoto AI V49.6 — Projects Hero Lock
 
 Replace:
 - projects.html
 - css/projects.css
 
-Keep existing js/projects.js.
+Keep:
+- js/projects.js
 
-This pass:
-- Removes the washed-out split-screen hero feeling.
-- Replaces the generic orbit-only visual with a CSS-built photography contact-sheet visual.
-- Keeps the premium dark/cinematic production workspace.
-- Removes technical gateway language from the hero.
-- Tightens hierarchy and visual continuity.
-- Preserves all existing Projects functionality and element IDs.
-- Main navigation remains photographer-first: Platform / Workflow / Projects / AI Studio / Pricing.
+V49.6 specifically fixes legacy light-theme bleed into Projects.
+The Projects body, main, shell and hero now have hard dark/cinematic overrides.
+The hero no longer depends on the global site's light background.
