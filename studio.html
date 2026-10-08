@@ -6,7 +6,7 @@
 <meta name="description" content="HotFoto AI Studio — autonomous photography production from upload to delivery.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=hotfoto42">
+<link rel="stylesheet" href="css/styles.css?v=hotfoto44">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script defer src="js/app.js?v=hotfoto43"></script>
 </head>
@@ -49,7 +49,7 @@
 
       <section class="studio-main">
         <div class="studio-topbar">
-          <div class="project-id"><span class="status-pip"></span><div><b id="projectName">NEW PRODUCTION</b><small id="projectMeta">Drop a shoot to begin</small></div></div>
+          <div class="project-id"><span class="status-pip"></span><div class="project-name-wrap"><button class="project-name-button" id="projectNameButton" type="button" title="Rename production"><b id="projectName">NEW PRODUCTION</b><span class="project-edit" aria-hidden="true">✎</span></button><input id="projectNameInput" class="project-name-input" type="text" maxlength="64" value="NEW PRODUCTION" aria-label="Production name" hidden><small id="projectMeta">Drop a shoot to begin</small></div></div>
           <div class="studio-top-metrics"><span><b id="imageCount">0</b> FRAMES</span><span><b id="qualityScore">—</b> QUALITY</span><span><b id="styleScore">—</b> STYLE DNA</span></div><button class="studio-start-btn studio-top-start" id="startHotFotoDocked" hidden><span class="start-icon">✦</span><span>START HOTFOTO</span><i>↗</i></button>
           <button class="icon-btn" id="resetStudio" title="Reset">↺</button>
         </div>
