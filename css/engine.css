@@ -89,3 +89,27 @@ html,body{background:#020b18 !important}
 .flow-track .flow-node{position:relative;overflow:hidden;transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;background:linear-gradient(145deg,#071a2f,#061221)}.flow-track .flow-node:before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 0%,rgba(70,219,255,.07),transparent 45%);opacity:0;transition:opacity .25s}.flow-track .flow-node:hover{transform:translateY(-5px);border-color:rgba(78,218,255,.38);box-shadow:0 18px 40px rgba(0,0,0,.28),0 0 24px rgba(52,187,255,.08)}.flow-track .flow-node:hover:before{opacity:1}.flow-track>i{font-size:20px;color:#55dfff;text-shadow:0 0 14px rgba(85,223,255,.45)}
 @media(max-width:1000px){.flow-hero{grid-template-columns:1fr;gap:26px}.flow-visual{height:290px}.flow-hero-copy>p{max-width:760px}}
 @media(max-width:560px){.flow-hero h2{font-size:42px}.flow-hero-copy>p{font-size:14px}.flow-benefits{gap:10px 16px}.flow-visual{height:255px;border-radius:20px}.flow-photo{width:70px;height:88px}.photo-one{left:4%}.photo-two{left:27%;top:66px}.photo-three{right:25%}.photo-four{right:3%;top:68px}.flow-ai{width:54px;height:54px}.flow-chip{right:12px;top:12px}}
+
+/* V48.14.1 — harden capability controls against global/UA button styling */
+.hf-engine-page .os-stage .cap-list .cap,
+.hf-engine-page .os-stage .cap-list button.cap{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  -moz-appearance:none !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  color:#dcecff !important;
+  width:100%;
+  margin:0;
+  text-align:left;
+}
+.hf-engine-page .os-stage .cap-list .cap:hover,
+.hf-engine-page .os-stage .cap-list button.cap:hover{
+  background:rgba(31,65,98,.34) !important;
+  color:#f3f8ff !important;
+}
+.hf-engine-page .os-stage .cap-list .cap b{color:#dcecff !important}
+.hf-engine-page .os-stage .cap-list .cap small{color:#6f8ba9 !important}
+.hf-engine-page .os-stage .cap-list .cap .cap-num{color:#486582 !important}
