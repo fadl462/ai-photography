@@ -107,6 +107,43 @@ async function analyze(body) {
   return { ...parsed, provider: 'openai', model: VISION_MODEL, generatedAt: new Date().toISOString() };
 }
 
+async function styleDNA(body) {
+  if (!Array.isArray(body.images) || !body.images.length) throw new Error('STYLE_IMAGES_REQUIRED');
+  const images = body.images.slice(0, 8).filter(Boolean);
+  const content = [{ type: 'input_text', text: `${systemRules}\nLearn a photographer's Style DNA from this small set of reference photographs. Infer the consistent photographic signature, not subject matter. Return JSON with: score (0-100), profileName, summary, exposureBias, contrast, saturation, colorCharacter, whiteBalanceCharacter, highlightRollOff, shadowCharacter, skinTreatment, sharpnessCharacter, grainCharacter, compositionCharacter, signatureTraits (array), avoidTraits (array), confidence (0-1), recommendedOperations (array of objects with type and value). Be conservative and do not invent a style when the references are inconsistent.` }];
+  for (let i = 0; i < images.length; i++) {
+    content.push({ type: 'input_text', text: `Reference ${i + 1}` });
+    content.push({ type: 'input_image', image_url: images[i], detail: body.detail || 'low' });
+  }
+  const response = await openAIResponses({
+    model: VISION_MODEL,
+    input: [{ role: 'user', content }],
+    maxOutputTokens: 1400
+  });
+  const parsed = parseJson(extractText(response));
+  if (!parsed) throw new Error('STYLE_DNA_INVALID_JSON');
+  return { ...parsed, provider: 'openai', model: VISION_MODEL, references: images.length, generatedAt: new Date().toISOString() };
+}
+
+async function selfCorrect(body) {
+  if (!body.image) throw new Error('IMAGE_REQUIRED');
+  const current = Array.isArray(body.operations) ? body.operations : [];
+  const prompt = `${systemRules}\nAct as HotFoto's self-correction controller. Inspect the processed photograph and decide whether it is production-safe. Compare the visible result against the intended operations: ${JSON.stringify(current).slice(0, 4000)}. Return JSON with: pass (boolean), score (0-100), confidence (0-1), issues (array), corrections (array), rerun (boolean), operations (array). operations may only contain safe deterministic worker operations: exposure (-1 to 1), contrast (0.85 to 1.18), saturation (0.85 to 1.18), sharpen (0 to 2), denoise (1 to 5), normalize (true). Do not recommend generative edits here. Prefer the smallest correction that fixes a visible issue.`;
+  const response = await openAIResponses({
+    model: VISION_MODEL,
+    input: [{ role: 'user', content: [
+      { type: 'input_text', text: prompt },
+      { type: 'input_image', image_url: body.image, detail: body.detail || 'low' }
+    ] }],
+    maxOutputTokens: 1100
+  });
+  const parsed = parseJson(extractText(response));
+  if (!parsed) throw new Error('SELF_CORRECT_INVALID_JSON');
+  const allowed = new Set(['exposure','contrast','saturation','sharpen','denoise','normalize']);
+  parsed.operations = Array.isArray(parsed.operations) ? parsed.operations.filter(o => o && allowed.has(o.type)) : [];
+  return { ...parsed, provider: 'openai', model: VISION_MODEL, generatedAt: new Date().toISOString() };
+}
+
 async function quality(body) {
   if (!body.image) throw new Error('IMAGE_REQUIRED');
   const prompt = `${systemRules}\nAct as HotFoto Quality Guard. Inspect this image for visible artifacts, identity drift, over-retouching, halos, clipping, unnatural skin, geometry problems and generative inconsistencies. Return JSON with: pass (boolean), score (0-100), confidence (0-1), issues (array), corrections (array), identitySafe (boolean).`;
@@ -232,7 +269,7 @@ const server = http.createServer(async (req, res) => {
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, deterministicWorker: true, generativeProviderHook: true }
       });
     }
     if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
@@ -240,6 +277,8 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/plan') return json(res, 200, await plan(body));
     if (url.pathname === '/analyze') return json(res, 200, await analyze(body));
     if (url.pathname === '/quality') return json(res, 200, await quality(body));
+    if (url.pathname === '/style-dna') return json(res, 200, await styleDNA(body));
+    if (url.pathname === '/self-correct') return json(res, 200, await selfCorrect(body));
     if (url.pathname === '/edit') return json(res, 200, await imageEdit(body));
     if (url.pathname === '/process') return json(res, 200, await processRequest(body));
     if (url.pathname === '/deliver') return json(res, 200, await deliver(body));

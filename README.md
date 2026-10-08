@@ -1,3 +1,11 @@
+## V47.4 — Style DNA + Self-Correction
+
+- Model-backed Style DNA learning from the strongest reference frames.
+- Bounded self-correction loop after Quality Guard failures.
+- Deterministic correction operations only; generative edits remain separate.
+- One correction pass per keeper, followed by an independent Quality Guard re-check.
+- Originals remain immutable.
+
 # HotFoto AI Studio V47
 
 V46 is the Studio product architecture upgrade focused on the 50-capability autonomous photography engine.

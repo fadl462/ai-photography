@@ -93,6 +93,9 @@ const apply=$('#studioApply');apply?.addEventListener('click',()=>{apply.textCon
  const makeGatewayPreview=async item=>{const im=await loadImage(item.url);const max=1280,scale=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),w=Math.max(1,Math.round(im.naturalWidth*scale)),h=Math.max(1,Math.round(im.naturalHeight*scale));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);return c.toDataURL('image/jpeg',.72)};
  const requestModelAnalysis=async item=>{const image=await makeGatewayPreview(item);return gatewayFetch('/analyze',{version:'v47.2',project:productionName,frameName:item.name,image,detail:'low'},18000)};
  const requestModelQuality=async item=>{const image=await makeGatewayPreview({url:item.processedUrl||item.url});return gatewayFetch('/quality',{version:'v47.2',project:productionName,frameName:item.name,image,detail:'low'},18000)};
+ const requestStyleDNA=async items=>{const refs=[];for(const item of items.slice(0,8)){try{refs.push(await makeGatewayPreview(item))}catch{}}if(!refs.length)return null;return gatewayFetch('/style-dna',{version:'v47.4',project:productionName,images:refs,detail:'low'},30000)};
+ const requestSelfCorrection=async item=>{const image=await makeGatewayPreview({url:item.processedUrl||item.url});return gatewayFetch('/self-correct',{version:'v47.4',project:productionName,frameName:item.name,image,operations:item.workerManifest?.operations||[],detail:'low'},22000)};
+ const applyStyleProfile=async style=>{if(!style)return;files.forEach(f=>{f.styleDNA=style});if(style.score!=null)$id('styleScore').textContent=Math.round(Number(style.score))+'%';try{localStorage.setItem('hotfotoStyleDNA',JSON.stringify(style))}catch{};const traits=Array.isArray(style.signatureTraits)?style.signatureTraits.slice(0,3).join(' · '):'';if(traits)$id('directorPrompt').textContent='Style DNA learned: '+(style.summary||traits);};
  const runGenerativeEdit=async type=>{
    const item=files[selected];
    if(!item){toast('Select a frame','Upload and select a photograph first.');return}
@@ -119,8 +122,52 @@ const apply=$('#studioApply');apply?.addEventListener('click',()=>{apply.textCon
    completeStep('cull','active');setProgress(22,'AI CULLING','Ranking focus, exposure, detail and visual quality.');if(window.HotFotoGateway?.configured?.()){const candidates=files.slice(0,Math.min(8,files.length));for(let i=0;i<candidates.length;i++){if(cancelled)break;const ai=await requestModelAnalysis(candidates[i]);if(ai){candidates[i].modelAnalysis=ai;const aiScore=Number(ai.cullScore??ai.visualScore??0);const localScore=Number(candidates[i].analysis?.score||0);if(aiScore>0)candidates[i].analysis.score=Math.round(localScore*.4+aiScore*.6);candidates[i].confidence=Number(ai.confidence||0);candidates[i].flags=ai.flags||[];}setProgress(22+Math.round(((i+1)/candidates.length)*10),'AI CULLING',`Model-analyzed frame ${i+1} of ${candidates.length}.`)}toast('Vision analysis complete',`${candidates.filter(f=>f.modelAnalysis).length} frame${candidates.filter(f=>f.modelAnalysis).length===1?'':'s'} scored by the connected model.`)}const ranked=[...files].sort((a,b)=>(b.analysis?.score||0)-(a.analysis?.score||0));ranked.forEach((f,i)=>f.keeper=i<Math.max(1,Math.ceil(files.length*.72)));selected=files.indexOf(ranked[0]);renderThumbs();await sleep(300);completeStep('cull','done');
    completeStep('develop','active');setProgress(36,'DEVELOPING & COLOR','Applying adaptive exposure, contrast and color balancing.');for(let i=0;i<files.length;i++){if(cancelled)break;await processImage(files[i]);processedCount++;setProgress(36+Math.round(((i+1)/files.length)*18),'DEVELOPING & COLOR',`Developed frame ${i+1} of ${files.length}.`);$id('processingTitle').textContent='DEVELOPING FRAME '+String(i+1).padStart(2,'0');$id('processingDetail').textContent='Balancing exposure, color and detail.';$id('canvasProgress').style.width=(36+Math.round(((i+1)/files.length)*18))+'%';if(i===selected)select(selected)}completeStep('develop','done');
    completeStep('retouch','active');setProgress(56,'REFINING DETAILS','Preparing natural detail and subject-safe refinement.');await sleep(Math.min(900,150+files.length*40));completeStep('retouch','done');
-   completeStep('style','active');setProgress(67,'APPLYING STYLE DNA','Harmonizing the set around its strongest visual reference.');$id('styleScore').textContent='94%';await sleep(500);completeStep('style','done');
-   completeStep('quality','active');$id('processingTitle').textContent='QUALITY GUARD';$id('processingDetail').textContent='Checking every processed result before approval.';$id('canvasProgress').style.width='78%';setProgress(78,'QUALITY GUARD','Checking exposure, clipping, detail and processing artifacts.');const avg=Math.round(files.reduce((s,f)=>s+(f.analysis?.score||78),0)/files.length);let q=Math.max(88,Math.min(98,avg+6));files.forEach(f=>f.quality=Math.max(80,Math.min(99,(f.analysis?.score||q)+6)));if(window.HotFotoGateway?.configured?.()&&files[selected]){const guard=await requestModelQuality(files[selected]);if(guard){files[selected].modelQuality=guard;if(Number.isFinite(Number(guard.score)))files[selected].quality=Math.round(Number(guard.score));q=Math.round(files.reduce((s,f)=>s+(f.quality||q),0)/files.length);if(guard.pass===false)toast('Quality Guard review','The model found issues in the selected frame. Review before final delivery.');else toast('Quality Guard passed','The connected model found no blocking issue in the selected frame.')}}$id('qualityScore').textContent=q;$id('canvasScore').textContent=files[selected]?.quality||q;await sleep(650);completeStep('quality','done');
+   completeStep('style','active');setProgress(67,'LEARNING STYLE DNA','Learning the photographer’s signature from the strongest frames.');const styleRefs=[...files].sort((a,b)=>(b.analysis?.score||0)-(a.analysis?.score||0)).slice(0,Math.min(6,files.length));const style=window.HotFotoGateway?.configured?.()?await requestStyleDNA(styleRefs):null;if(style){await applyStyleProfile(style);toast('Style DNA learned',`${Math.round(Number(style.score||0))}% confidence across ${style.references||styleRefs.length} reference frames.`)}else{const saved=(()=>{try{return JSON.parse(localStorage.getItem('hotfotoStyleDNA')||'null')}catch{return null}})();if(saved)await applyStyleProfile(saved);else $id('styleScore').textContent='—';}await sleep(350);completeStep('style','done');
+   completeStep('quality','active');
+   $id('processingTitle').textContent='QUALITY GUARD';
+   $id('processingDetail').textContent='Checking every processed result, then self-correcting weak frames.';
+   $id('canvasProgress').style.width='78%';
+   setProgress(78,'QUALITY GUARD','Running independent checks and a bounded self-correction loop.');
+   const avg=Math.round(files.reduce((s,f)=>s+(f.analysis?.score||78),0)/files.length);
+   let q=Math.max(88,Math.min(98,avg+6));
+   files.forEach(f=>f.quality=Math.max(80,Math.min(99,(f.analysis?.score||q)+6)));
+   if(window.HotFotoGateway?.configured?.()){
+     const targets=[...files].filter(f=>f.keeper).slice(0,8);
+     for(let i=0;i<targets.length;i++){
+       const f=targets[i];
+       const guard=await requestModelQuality(f);
+       if(guard){
+         f.modelQuality=guard;
+         if(Number.isFinite(Number(guard.score))) f.quality=Math.round(Number(guard.score));
+         if(guard.pass===false){
+           const correction=await requestSelfCorrection(f);
+           f.selfCorrection=correction;
+           if(correction?.rerun && Array.isArray(correction.operations) && correction.operations.length){
+             const preview=await makeGatewayPreview(f);
+             const rerun=await gatewayFetch('/process',{version:'v47.4',project:productionName,frameName:f.name,image:preview,maxEdge:2400,quality:92,operations:correction.operations},30000);
+             if(rerun?.image){
+               f.processedUrl=rerun.image;
+               f.processed=true;
+               f.workerManifest=rerun.operationManifest;
+               const finalGuard=await requestModelQuality(f);
+               if(finalGuard){
+                 f.modelQuality=finalGuard;
+                 if(Number.isFinite(Number(finalGuard.score))) f.quality=Math.round(Number(finalGuard.score));
+                 f.selfCorrection.final=finalGuard;
+               }
+             }
+           }
+         }
+       }
+       setProgress(78+Math.round(((i+1)/Math.max(1,targets.length))*10),'QUALITY GUARD',`Verified keeper ${i+1} of ${targets.length}.`);
+     }
+     toast('Self-correction complete',`${targets.length} keeper${targets.length===1?'':'s'} passed through bounded Quality Guard.`);
+     q=Math.round(files.reduce((s,f)=>s+(f.quality||q),0)/files.length);
+   }
+   $id('qualityScore').textContent=q;
+   $id('canvasScore').textContent=files[selected]?.quality||q;
+   await sleep(500);
+   completeStep('quality','done');
    completeStep('delivery','active');$id('processingTitle').textContent='PREPARING DELIVERY';$id('processingDetail').textContent='Building your production-ready masters.';$id('canvasProgress').style.width='90%';setProgress(90,'PREPARING DELIVERY','Building master-ready processed images and delivery metadata.');select(selected);await sleep(550);completeStep('delivery','done');running=false;$id('photoViewport').classList.remove('processing');$id('canvasProgress').style.width='100%';$id('processingTitle').textContent='PRODUCTION COMPLETE';$id('processingDetail').textContent='Your selected frame is ready to inspect.';setProgress(100,'PRODUCTION COMPLETE',`${files.filter(f=>f.keeper).length} keepers · ${files.length} analyzed · Quality Guard ${q}/100.`);$id('planStatus').textContent='COMPLETE';$id('directorState').textContent='READY FOR DELIVERY';$id('directorHint').textContent='Production passed the autonomous quality loop.';$id('directorPrompt').textContent='HotFoto analyzed the shoot, ranked the frames, produced processed masters, applied Style DNA and verified the result. Your originals remain untouched.';$id('exportBtn').disabled=false;if(dockedStart)dockedStart.disabled=false;if(bottomStart)bottomStart.disabled=false;$id('studioNavState').textContent='COMPLETE';toast('Production complete',`${files.length} analyzed · ${files.filter(f=>f.keeper).length} keepers · Quality Guard ${q}/100.`);renderThumbs();select(selected);
  };
  $id('startHotFoto')?.addEventListener('click',start);$id('startHotFotoDocked')?.addEventListener('click',start);$id('startHotFotoBottom')?.addEventListener('click',start);
