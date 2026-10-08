@@ -1,0 +1,19 @@
+/* HotFoto V49.1 — Photographer Comfort Layer */
+.hf-comfort-actions{display:flex;align-items:center;gap:7px;margin-left:6px}
+.hf-comfort-action{appearance:none;border:1px solid rgba(128,164,208,.20);background:rgba(8,19,34,.72);color:#b9c9dc;border-radius:8px;padding:7px 9px;font:600 8px/1 "Space Grotesk",sans-serif;letter-spacing:.08em;text-decoration:none;cursor:pointer;white-space:nowrap}
+.hf-comfort-action:hover{border-color:rgba(73,214,255,.55);color:#fff;background:rgba(14,35,58,.9)}
+.hf-comfort-action b{display:inline-grid;place-items:center;min-width:16px;height:16px;margin-left:4px;border-radius:999px;background:rgba(91,214,255,.14);color:#79dcff;font-size:8px}
+.hf-cull-board{margin:0 0 14px;padding:18px 20px;border:1px solid rgba(116,157,207,.16);border-radius:16px;background:linear-gradient(135deg,rgba(10,23,39,.94),rgba(11,20,34,.88));box-shadow:0 20px 60px rgba(0,0,0,.22)}
+.hf-cull-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.hf-cull-head h3{margin:5px 0 6px;font-size:18px;letter-spacing:-.02em;color:#f5f8ff}
+.hf-cull-head p{margin:0;max-width:580px;color:#8094ad;font-size:11px;line-height:1.55}
+.hf-cull-stats{display:flex;gap:22px}
+.hf-cull-stats div{min-width:72px}.hf-cull-stats b{display:block;color:#fff;font:700 21px/1 "Manrope",sans-serif}.hf-cull-stats span{display:block;margin-top:5px;color:#60758f;font:600 7px/1 "Space Grotesk",sans-serif;letter-spacing:.12em}
+.hf-cull-actions{display:flex;gap:7px;align-items:center;margin-top:15px;flex-wrap:wrap}
+.hf-cull-actions button{border:1px solid rgba(125,163,207,.15);background:rgba(255,255,255,.025);color:#7f93ab;border-radius:8px;padding:8px 11px;font:700 8px/1 "Space Grotesk",sans-serif;letter-spacing:.09em;cursor:pointer}
+.hf-cull-actions button:hover,.hf-cull-actions button.active{border-color:rgba(76,215,255,.45);color:#dff8ff;background:rgba(55,184,229,.08)}
+.hf-cull-actions .hf-cull-select{margin-left:auto;color:#fff;background:linear-gradient(90deg,#10c9ec,#7255ff);border-color:transparent}
+.hf-cull-note{margin-top:13px;padding-top:12px;border-top:1px solid rgba(125,163,207,.10);color:#687e98;font-size:9px}
+.hf-cull-note span{color:#62ddff;margin-right:7px}.hf-cull-note b{color:#b9c9dc}
+@media(max-width:1100px){.hf-comfort-actions{display:none}.hf-cull-head{flex-direction:column}.hf-cull-select{margin-left:0!important}}
+@media(max-width:700px){.hf-cull-board{padding:14px}.hf-cull-stats{gap:12px}.hf-cull-actions button{font-size:7px;padding:7px 8px}}

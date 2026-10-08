@@ -1,112 +1,24 @@
-# HotFoto AI — V48.3
+# HotFoto V49.1 — Photographer Comfort Patch
 
-V48.3 adds two-way client proofing to the cloud production platform.
+## Purpose
+Removes engineering-facing Studio controls and adds a photographer-first AI Culling command centre.
 
-## Production loop
-Understand → Cull → Develop → Style DNA → Quality Guard → Self-Correct → Deliver → Client Proof → Photographer Review → Finalize
+### Changes
+- Hides HotFoto OS / Engine Map / AI Gateway / internal intelligence controls.
+- Adds Projects / Review Queue / Delivery quick actions.
+- Adds an AI Culling board with:
+  - Frames / Keepers counts
+  - Keepers / All Frames / Review filters
+  - Select Strongest action
+  - photographer-control reassurance
+- Uses the existing HotFoto filmstrip and culling results; no fake AI capability is introduced.
 
-## V48.3
-- Private expiring client deliveries
-- Client favorites and final selections
-- Frame-specific comments
-- One-time proof submission
-- Photographer proof review
-- Account/project/asset ownership enforcement
-- PostgreSQL persistence with local development fallback
-- Original/master files remain immutable
+## Installation
+1. Copy `js/photographer-comfort.js` into the site's `js/` folder.
+2. Copy `css/photographer-comfort.css` into the site's `css/` folder.
+3. In `studio.html`, after the existing `js/app.js` script, add:
+   `<link rel="stylesheet" href="css/photographer-comfort.css?v=49.1">`
+   and:
+   `<script defer src="js/photographer-comfort.js?v=49.1"></script>`
 
-See `PROOFING-CLIENT-APPROVALS-V48.3.md` for the proofing contract.
-
-# HotFoto AI V48 — Project Workspace
-
-V48 adds the persistent photographer workspace and cloud asset browser on top of the V47.9 secure resumable-upload architecture.
-
-## V48 focus
-- Account-scoped production workspace
-- Cloud project browser
-- Asset browser and upload-state visibility
-- Project summaries for frames, keepers, quality and Style DNA
-- Short-lived signed asset downloads
-- Secure project/asset ownership enforcement
-- Studio handoff from a selected production
-
-See `PROJECT-WORKSPACE-V48.md` for the API and security contract.
-
-Previous V47 architecture and capability audit files are retained in this package.
-## V47.4 — Style DNA + Self-Correction
-
-- Model-backed Style DNA learning from the strongest reference frames.
-- Bounded self-correction loop after Quality Guard failures.
-- Deterministic correction operations only; generative edits remain separate.
-- One correction pass per keeper, followed by an independent Quality Guard re-check.
-- Originals remain immutable.
-
-# HotFoto AI Studio V47
-
-V46 is the Studio product architecture upgrade focused on the 50-capability autonomous photography engine.
-
-## Included
-- Autonomous Studio cockpit
-- Real browser-side image analysis and adaptive enhancement prototype
-- Named productions and project-aware delivery
-- Multi-image delivery/export with format, size, quality and ZIP controls
-- AI Director AUTO / PRO / DIRECTOR modes
-- Shoot Profile orchestration selector
-- 50-capability Engine Map with LIVE / WIRED / MODEL ENGINE states
-- Review Queue surface for low-confidence work
-- Quality, Style DNA and Consistency indicators
-- Original-vs-HotFoto canvas comparison
-- Fixed-height production workspace
-- No demo-shoot mode in the production Studio
-
-## Important
-The Engine Map is intentionally honest about implementation state. Advanced AI capabilities require a model-backed processing service; V46 maps the production architecture and UI surfaces without claiming that every advanced model is already connected.
-
-See `HOTFOTO-50-CAPABILITY-AUDIT.md` for the full 50-capability tracking matrix.
-
-
-## V47 — Model Gateway
-V47 adds a server-side model gateway boundary. The Studio can store a gateway endpoint, test `/health`, request a production plan from `/plan`, and safely fall back to the local prototype if the gateway is unavailable. Provider API keys are not stored in the browser. See `HOTFOTO-V47-MODEL-GATEWAY.md`.
-
-
-## V47.2 — Real Vision Gateway
-The next layer is now implemented as an executable Node gateway. With `OPENAI_API_KEY` configured, `/plan`, `/analyze`, and `/quality` call a multimodal model server-side. The browser sends resized previews to the gateway; provider secrets never enter Studio JavaScript. `/process` and `/deliver` remain explicit manifests until a dedicated pixel-processing worker is connected. See `GATEWAY-SETUP.md`.
-
-
-## V47.2 — Deterministic Image Worker
-The gateway now includes a real server-side image worker powered by Sharp. When the Studio is connected to the gateway, `/process` can execute non-generative photographic operations (auto exposure, contrast, saturation, sharpening, resize/rotation, optional normalize/denoise) and returns a processed image. The original remains client-side and immutable.
-
-Generative operations such as remove/replace/expand, relight, background replacement and super-resolution are explicitly returned as pending operations; HotFoto does not fake these capabilities. The architecture is ready for a dedicated generative provider to consume the same operation manifest.
-
-
-## V47.5 — Photographer Intelligence
-
-V47.5 adds persistent photographer intelligence behind the Studio gateway. A profile can retain Style DNA, approval/rejection feedback and recent production decisions. The planner receives this memory on future shoots and treats it as a preference layer rather than an absolute instruction. Originals remain untouched and the browser continues to work safely without the gateway.
-
-Memory endpoints: `POST /memory`, `POST /memory/style`, `POST /memory/feedback`. Storage defaults to the gateway `data/` directory and can be redirected with `HOTFOTO_MEMORY_DIR`. For production, replace the file store with authenticated encrypted storage tied to the photographer account.
-
-
-## V47.7 — Account Foundation
-Authenticated photographer accounts now scope persistent Style DNA, feedback and project memory. Passwords use server-side scrypt hashing; sessions are expiring bearer tokens stored only as hashes on the gateway. See `ACCOUNT-SECURITY-V47.7.md`. This is a secure foundation for migration to a managed production database, not a claim that the included JSON store is the final SaaS persistence layer.
-
-## V47.9 — Cloud Data Architecture
-V47.9 adds a PostgreSQL-backed persistence adapter with local fallback, account-scoped project records, asset metadata, and a cloud-storage boundary. See `CLOUD-DATA-ARCHITECTURE-V47.9.md`.
-
-
-## V47.9 — Resumable Cloud Assets
-Original photographs can now be uploaded directly from the browser to S3-compatible object storage using authenticated multipart upload sessions and short-lived signed part URLs. See `CLOUD-UPLOADS-V47.9.md`. The gateway only creates/authorizes the upload and records asset metadata; it does not proxy the large image bytes.
-
-
-## V48.1 — Client Delivery & Proofing
-HotFoto now includes a private client-delivery layer: photographers can publish selected assets from a project as an expiring share link, with account/project ownership checks and short-lived signed object-storage downloads. The public gallery does not expose photographer account details. See `DELIVERY-CLIENT-GALLERY-V48.1.md`.
-
-
-### V48.3 — Finalization & Delivery Intelligence
-Client proof submissions can now be validated and finalized into a persistent package manifest. Unresolved selections and anomalies are surfaced, project readiness is updated, and client decisions contribute to Photographer Intelligence.
-
-## V48.4 — Intelligent Delivery Packaging
-Finalized client selections can now be translated into destination-aware package execution manifests for Original Archive, Web Gallery, Social Set, and Print Ready delivery. The Image Worker remains the source of truth for actual pixel-export completion.
-
-
-## V48.5 — Real Export Execution
-V48.5 executes finalized delivery profiles through Sharp, assembles actual ZIP packages, stores them in object storage, and returns short-lived signed download URLs. See `EXPORT-EXECUTION-V48.5.md`.
+This is a drop-in patch because the GitHub integration currently has read-only access and cannot commit directly.
