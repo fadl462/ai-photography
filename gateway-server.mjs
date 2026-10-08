@@ -8,6 +8,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, '');
 const VISION_MODEL = process.env.HOTFOTO_VISION_MODEL || 'gpt-6-luna';
 const PLANNER_MODEL = process.env.HOTFOTO_PLANNER_MODEL || VISION_MODEL;
+const IMAGE_MODEL = process.env.HOTFOTO_IMAGE_MODEL || 'gpt-image-2';
 const MAX_BODY = Number(process.env.HOTFOTO_MAX_BODY || 28 * 1024 * 1024);
 const WORKER_MAX_EDGE = Number(process.env.HOTFOTO_WORKER_MAX_EDGE || 5000);
 
@@ -129,6 +130,45 @@ const dataUrlToBuffer = value => {
 };
 
 const bufferToDataUrl = (buffer, mime='image/jpeg') => `data:${mime};base64,${buffer.toString('base64')}`;
+const imageEdit = async body => {
+  if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY_NOT_CONFIGURED');
+  if (!body.image) throw new Error('IMAGE_REQUIRED');
+  const { mime, buffer } = dataUrlToBuffer(body.image);
+  const prompt = String(body.prompt || 'Improve this photograph naturally while preserving the subject identity, anatomy, camera realism and original composition.').slice(0, 6000);
+  const form = new FormData();
+  form.append('model', body.model || IMAGE_MODEL);
+  form.append('prompt', prompt);
+  form.append('image', new Blob([buffer], { type: mime || 'image/jpeg' }), body.filename || 'hotfoto-input.jpg');
+  if (body.mask) {
+    const mask = dataUrlToBuffer(body.mask);
+    form.append('mask', new Blob([mask.buffer], { type: mask.mime || 'image/png' }), 'hotfoto-mask.png');
+  }
+  if (body.size) form.append('size', body.size);
+  if (body.quality) form.append('quality', body.quality);
+  if (body.output_format) form.append('output_format', body.output_format);
+  if (body.background) form.append('background', body.background);
+  if (body.input_fidelity) form.append('input_fidelity', body.input_fidelity);
+  const r = await fetch(`${OPENAI_BASE_URL}/images/edits`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+    body: form
+  });
+  const text = await r.text();
+  if (!r.ok) throw new Error(`OPENAI_IMAGE_${r.status}: ${text.slice(0, 1200)}`);
+  const data = JSON.parse(text);
+  const item = data?.data?.[0];
+  if (!item?.b64_json) throw new Error('IMAGE_EDIT_NO_OUTPUT');
+  return {
+    ok: true,
+    provider: 'openai',
+    model: body.model || IMAGE_MODEL,
+    image: `data:image/${body.output_format === 'jpeg' ? 'jpeg' : 'png'};base64,${item.b64_json}`,
+    revisedPrompt: item.revised_prompt || null,
+    usage: data.usage || null,
+    generatedAt: new Date().toISOString()
+  };
+};
+
 
 async function processRequest(body) {
   if (!body.image) throw new Error('IMAGE_REQUIRED');
@@ -188,7 +228,7 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v47.2',
+        version: 'v47.3',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
@@ -200,6 +240,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/plan') return json(res, 200, await plan(body));
     if (url.pathname === '/analyze') return json(res, 200, await analyze(body));
     if (url.pathname === '/quality') return json(res, 200, await quality(body));
+    if (url.pathname === '/edit') return json(res, 200, await imageEdit(body));
     if (url.pathname === '/process') return json(res, 200, await processRequest(body));
     if (url.pathname === '/deliver') return json(res, 200, await deliver(body));
     return json(res, 404, { ok: false, error: 'NOT_FOUND' });
