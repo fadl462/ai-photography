@@ -1296,3 +1296,22 @@ footer{padding:34px clamp(24px,7vw,100px);background:#06101e;color:#dce7f2;displ
   height:18px;
   flex:0 0 18px;
 }
+
+/* V40 — bottom cockpit action: keep START HOTFOTO inside the production workspace */
+.film-actions{align-items:center}
+.film-start-btn{border:0!important;background:linear-gradient(110deg,#10d8ef,#7053ff)!important;color:#06101e!important;border-radius:7px!important;height:30px!important;padding:0 11px!important;display:inline-flex!important;align-items:center;justify-content:center;gap:6px;font:800 7px 'Space Grotesk'!important;letter-spacing:.06em;box-shadow:0 8px 22px rgba(64,112,255,.2);white-space:nowrap}
+.film-start-btn span{font-size:9px;line-height:1}
+.film-start-btn i{font-style:normal;font-size:10px}
+.film-start-btn:disabled{opacity:.55;cursor:wait}
+@media(max-width:900px){.filmstrip{grid-template-columns:80px minmax(0,1fr) auto!important}.film-actions{gap:4px}.film-start-btn{padding:0 8px!important}.film-start-btn span{display:none}}
+@media(max-width:560px){.film-actions{gap:4px}.film-start-btn{font-size:6px!important;padding:0 7px!important}.film-start-btn i{display:none}}
+/* V40.1 — keep the production action group visible and anchored in the filmstrip */
+.studio-filmstrip{grid-template-columns:90px minmax(0,1fr) 285px!important}
+@media(max-width:820px){
+  .studio-filmstrip{grid-template-columns:80px minmax(0,1fr) auto!important}
+  .film-actions{display:flex!important;justify-content:flex-end;align-items:center}
+}
+@media(max-width:560px){
+  .studio-filmstrip{grid-template-columns:1fr!important;gap:8px!important}
+  .film-actions{justify-content:flex-start!important}
+}
