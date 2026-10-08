@@ -32,3 +32,17 @@ alter table hotfoto_deliveries add column if not exists proof_status text not nu
 alter table hotfoto_deliveries add column if not exists client_name text;
 alter table hotfoto_deliveries add column if not exists client_email text;
 alter table hotfoto_deliveries add column if not exists submitted_at timestamptz;
+
+
+-- V48.3 finalization + delivery intelligence
+create table if not exists hotfoto_finalizations (
+  id text primary key, delivery_id text unique not null references hotfoto_deliveries(id) on delete cascade,
+  project_id text not null references hotfoto_projects(id) on delete cascade,
+  user_id text not null references hotfoto_users(id) on delete cascade,
+  selected_asset_ids jsonb not null default '[]'::jsonb,
+  rejected_asset_ids jsonb not null default '[]'::jsonb,
+  anomalies jsonb not null default '[]'::jsonb,
+  package jsonb not null default '{}'::jsonb,
+  finalized_at timestamptz not null default now()
+);
+create index if not exists hotfoto_finalizations_project_idx on hotfoto_finalizations(project_id, finalized_at desc);

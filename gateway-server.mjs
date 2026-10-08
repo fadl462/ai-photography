@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, getProject, listProjectAssets, updateProject, createAsset, getAsset, updateAssetMetadata, createDelivery, listDeliveries, getPublicDelivery, getProofing, saveProofAction, submitProofing, getDeliveryProofForOwner } from './db.mjs';
+import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, getProject, listProjectAssets, updateProject, createAsset, getAsset, updateAssetMetadata, createDelivery, listDeliveries, getPublicDelivery, getProofing, saveProofAction, submitProofing, getDeliveryProofForOwner, finalizeDelivery, getFinalizationForOwner } from './db.mjs';
 import { storageHealth, initiateMultipart, completeMultipart, abortMultipart, headObject, signedDownload } from './storage.mjs';
 
 const PORT = Number(process.env.PORT || 8787);
@@ -71,6 +71,8 @@ async function deliveryList(body,userId) { return {ok:true, deliveries:await lis
 async function proofAction(body) { return {ok:true, action:await saveProofAction(String(body.token||''),body)}; }
 async function proofSubmit(body) { return await submitProofing(String(body.token||''),body); }
 async function proofOwner(body,userId) { return {ok:true, proof:await getDeliveryProofForOwner(userId,String(body.deliveryId||''))}; }
+async function deliveryFinalize(body,userId) { return await finalizeDelivery(userId,String(body.deliveryId||''),body); }
+async function finalizationOwner(body,userId) { return {ok:true, finalization:await getFinalizationForOwner(userId,String(body.deliveryId||''))}; }
 
 async function publicDelivery(token) { const d=await getPublicDelivery(token); if(!d) throw new Error('DELIVERY_NOT_FOUND'); const proof=await getProofing(d); if(d.status==='expired') return {ok:true,delivery:d,proof,assets:[]}; const assets=[]; for(const id of (d.assetIds||[])){ const asset=await getAsset(d.userId,id); if(!asset) continue; let download=null; if(asset.storageKey && storageHealth().enabled){ try { download=await signedDownload({key:asset.storageKey,expiresIn:300}); } catch {} } assets.push({...asset,download}); } return {ok:true,delivery:d,proof,assets}; }
 
@@ -393,7 +395,7 @@ const server = http.createServer(async (req, res) => {
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true, finalization: true, deliveryIntelligence: true, clientFeedbackLearning: true }
       });
     }
     if (req.method === 'GET' && url.pathname === '/health/db') return json(res, 200, await dbHealth());
@@ -416,6 +418,8 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/delivery/create') return json(res, 201, await deliveryCreate(body, session.userId));
     if (url.pathname === '/delivery/list') return json(res, 200, await deliveryList(body, session.userId));
     if (url.pathname === '/delivery/proof') return json(res, 200, await proofOwner(body, session.userId));
+    if (url.pathname === '/delivery/finalize') return json(res, 200, await deliveryFinalize(body, session.userId));
+    if (url.pathname === '/delivery/finalization') return json(res, 200, await finalizationOwner(body, session.userId));
     if (url.pathname === '/assets/multipart/init') return json(res, 201, await initMultipart(body, session.userId));
     if (url.pathname === '/assets/multipart/complete') return json(res, 200, await completeAssetUpload(body, session.userId));
     if (url.pathname === '/assets/multipart/abort') return json(res, 200, await abortAssetUpload(body, session.userId));

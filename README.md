@@ -1,11 +1,11 @@
-# HotFoto AI — V48.2
+# HotFoto AI — V48.3
 
-V48.2 adds two-way client proofing to the cloud production platform.
+V48.3 adds two-way client proofing to the cloud production platform.
 
 ## Production loop
 Understand → Cull → Develop → Style DNA → Quality Guard → Self-Correct → Deliver → Client Proof → Photographer Review → Finalize
 
-## V48.2
+## V48.3
 - Private expiring client deliveries
 - Client favorites and final selections
 - Frame-specific comments
@@ -15,7 +15,7 @@ Understand → Cull → Develop → Style DNA → Quality Guard → Self-Correct
 - PostgreSQL persistence with local development fallback
 - Original/master files remain immutable
 
-See `PROOFING-CLIENT-APPROVALS-V48.2.md` for the proofing contract.
+See `PROOFING-CLIENT-APPROVALS-V48.3.md` for the proofing contract.
 
 # HotFoto AI V48 — Project Workspace
 
@@ -99,3 +99,7 @@ Original photographs can now be uploaded directly from the browser to S3-compati
 
 ## V48.1 — Client Delivery & Proofing
 HotFoto now includes a private client-delivery layer: photographers can publish selected assets from a project as an expiring share link, with account/project ownership checks and short-lived signed object-storage downloads. The public gallery does not expose photographer account details. See `DELIVERY-CLIENT-GALLERY-V48.1.md`.
+
+
+### V48.3 — Finalization & Delivery Intelligence
+Client proof submissions can now be validated and finalized into a persistent package manifest. Unresolved selections and anomalies are surfaced, project readiness is updated, and client decisions contribute to Photographer Intelligence.

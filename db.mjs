@@ -77,6 +77,15 @@ export async function ensureSchema() {
     alter table hotfoto_deliveries add column if not exists client_name text;
     alter table hotfoto_deliveries add column if not exists client_email text;
     alter table hotfoto_deliveries add column if not exists submitted_at timestamptz;
+    create table if not exists hotfoto_finalizations (
+      id text primary key, delivery_id text unique not null references hotfoto_deliveries(id) on delete cascade,
+      project_id text not null references hotfoto_projects(id) on delete cascade,
+      user_id text not null references hotfoto_users(id) on delete cascade,
+      selected_asset_ids jsonb not null default '[]'::jsonb, rejected_asset_ids jsonb not null default '[]'::jsonb,
+      anomalies jsonb not null default '[]'::jsonb, package jsonb not null default '{}'::jsonb,
+      finalized_at timestamptz not null default now()
+    );
+    create index if not exists hotfoto_finalizations_project_idx on hotfoto_finalizations(project_id, finalized_at desc);
   `);
   return true;
 }
@@ -259,6 +268,38 @@ export async function getDeliveryProofForOwner(userId, deliveryId) {
   const p=await getPool();
   if(!p){ const deliveries=await read(`deliveries-${userId}.json`,[]); const d=deliveries.find(x=>x.id===deliveryId); if(!d) throw new Error('DELIVERY_NOT_FOUND'); const actions=await read(`proof-${deliveryId}.json`,[]); return {...d,actions}; }
   const r=await p.query('select id,project_id as "projectId",title,status,proof_status as "proofStatus",client_name as "clientName",client_email as "clientEmail",submitted_at as "submittedAt",asset_ids as "assetIds",options,expires_at as "expiresAt",created_at as "createdAt" from hotfoto_deliveries where id=$1 and user_id=$2',[deliveryId,userId]); if(!r.rowCount) throw new Error('DELIVERY_NOT_FOUND'); const d=r.rows[0]; const a=await p.query('select id,asset_id as "assetId",client_key as "clientKey",action,value,comment,client_name as "clientName",client_email as "clientEmail",created_at as "createdAt",updated_at as "updatedAt" from hotfoto_proof_actions where delivery_id=$1 order by created_at asc',[deliveryId]); return {...d,actions:a.rows};
+}
+
+export async function finalizeDelivery(userId, deliveryId, body={}) {
+  const p=await getPool();
+  const d=await getDeliveryProofForOwner(userId, deliveryId);
+  if(d.proofStatus!=='submitted') throw new Error('PROOF_NOT_SUBMITTED');
+  const selected=[...new Set((d.actions||[]).filter(a=>a.action==='select' && a.value===true && a.assetId).map(a=>String(a.assetId)))];
+  const delivered=(d.assetIds||[]).map(String);
+  const rejected=[...new Set((d.actions||[]).filter(a=>a.action==='select' && a.value===false && a.assetId).map(a=>String(a.assetId)))];
+  const invalid=selected.filter(id=>!delivered.includes(id));
+  const duplicateSelection=selected.length!==((d.actions||[]).filter(a=>a.action==='select'&&a.value===true&&a.assetId).map(a=>String(a.assetId)).length);
+  const missing=delivered.filter(id=>!selected.includes(id) && !rejected.includes(id));
+  const anomalies=[]; if(invalid.length) anomalies.push({type:'invalid_selection',assetIds:invalid}); if(duplicateSelection) anomalies.push({type:'duplicate_selection'}); if(missing.length) anomalies.push({type:'unresolved_assets',assetIds:missing});
+  if(!selected.length) throw new Error('NO_SELECTED_ASSETS');
+  const packageInfo={format:String(body.format||'original').slice(0,40),deliveryName:String(d.title||'Final Delivery'),clientName:d.clientName||null,assetCount:selected.length,generatedAt:new Date().toISOString()};
+  const id=`fin_${crypto.randomBytes(10).toString('hex')}`;
+  if(!p){
+    await write(`finalization-${deliveryId}.json`,{id,deliveryId,projectId:d.projectId,userId,selectedAssetIds:selected,rejectedAssetIds:rejected,anomalies,package:packageInfo,finalizedAt:new Date().toISOString()});
+  } else {
+    await p.query(`insert into hotfoto_finalizations(id,delivery_id,project_id,user_id,selected_asset_ids,rejected_asset_ids,anomalies,package) values($1,$2,$3,$4,$5,$6,$7,$8) on conflict(delivery_id) do update set selected_asset_ids=excluded.selected_asset_ids,rejected_asset_ids=excluded.rejected_asset_ids,anomalies=excluded.anomalies,package=excluded.package,finalized_at=now()`,[id,deliveryId,d.projectId,userId,JSON.stringify(selected),JSON.stringify(rejected),JSON.stringify(anomalies),JSON.stringify(packageInfo)]);
+  }
+  const project=await getProject(userId,d.projectId);
+  const summary={...(project?.summary||{}),finalization:{deliveryId,selected:selected.length,rejected:rejected.length,unresolved:missing.length,anomalies:anomalies.length,finalizedAt:packageInfo.generatedAt}};
+  await updateProject(userId,d.projectId,{summary,status:'ready'});
+  await saveProfile(userId, profile=>{ profile.feedback={...(profile.feedback||{}),clientSelections:(profile.feedback?.clientSelections||0)+selected.length,clientRejections:(profile.feedback?.clientRejections||0)+rejected.length}; profile.decisions=[...(profile.decisions||[]),{type:'client_finalization',projectId:d.projectId,selected:selected.length,rejected:rejected.length,at:packageInfo.generatedAt}].slice(-500); return profile; });
+  return {ok:true,finalization:{id,deliveryId,projectId:d.projectId,selectedAssetIds:selected,rejectedAssetIds:rejected,anomalies,package:packageInfo,finalizedAt:packageInfo.generatedAt}};
+}
+
+export async function getFinalizationForOwner(userId, deliveryId) {
+  const p=await getPool(); if(!p) return await read(`finalization-${deliveryId}.json`,null);
+  const r=await p.query('select id,delivery_id as "deliveryId",project_id as "projectId",selected_asset_ids as "selectedAssetIds",rejected_asset_ids as "rejectedAssetIds",anomalies,package,finalized_at as "finalizedAt" from hotfoto_finalizations where delivery_id=$1 and user_id=$2',[deliveryId,userId]);
+  return r.rows[0]||null;
 }
 
 export async function getPublicDelivery(token) {
