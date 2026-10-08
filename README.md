@@ -1,40 +1,23 @@
-# HotFoto AI V49.3 — Photographer-First Navigation Update
+HotFoto AI V49.4 — Premium Projects Page
 
-## What changed
+Changed files:
+- projects.html
+- css/projects.css
 
-This patch implements the navigation decision:
+Upload both files to the matching locations in the repository.
 
-- **Projects** remains a primary navigation item.
-- **Social Studio** is removed from the primary navigation.
-- **Campaigns** is removed from the primary navigation.
-- Social Content and Campaigns remain available from a selected production in **Projects**.
-- Gateway endpoint / session token / project ID fields are hidden on the Social and Campaign pages; the existing local connection values continue to be used by the underlying scripts.
-- Direct campaign/social URLs still work.
-- The photographer is guided through: **Projects → Social Content / Campaign**.
+What changed:
+- Rebuilt the Projects hero to remove the washed-out/empty look.
+- Added a cinematic HotFoto production workspace visual.
+- Removed Social Studio from the main navigation.
+- Stronger hierarchy: create production → select shoot → inspect → deliver.
+- Premium dark workspace surfaces, glass treatment and subtle blue/violet intelligence accents.
+- Improved empty state with a clearer first-production action.
+- Added a compact workspace principles strip.
+- Preserved all existing IDs required by js/projects.js.
+- Preserved New Production modal and project functionality.
+- Added hero New Production and empty-state New Production shortcuts.
+- Cache-busted CSS/JS references to V49.4.
 
-## Install
-
-1. Upload `js/hotfoto-v49-3-navigation.js` to your site's `js/` folder.
-2. Upload `css/hotfoto-v49-3-navigation.css` to your site's `css/` folder.
-3. Add these immediately before `</head>` on the following pages:
-   - `index.html`
-   - `platform.html`
-   - `workflow.html`
-   - `projects.html`
-   - `social.html`
-   - `campaign.html`
-   - `pricing.html`
-   - `studio.html` (optional; the script is safe there)
-
-```html
-<link rel="stylesheet" href="css/hotfoto-v49-3-navigation.css?v=hotfoto493">
-<script defer src="js/hotfoto-v49-3-navigation.js?v=hotfoto493"></script>
-```
-
-The patch is additive: it does not require replacing the existing HTML pages.
-
-## Intended customer flow
-
-**Projects → select production → Social Content or Build Campaign**
-
-The engineering architecture stays behind the scenes. Photographers see the outcome they want rather than the infrastructure that powers it.
+Important:
+The ZIP does not replace js/projects.js. The existing projects.js should remain in place.

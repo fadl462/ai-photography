@@ -1,7 +1,187 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Projects — HotFoto AI</title><meta name="description" content="HotFoto AI project workspace and cloud asset browser."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/styles.css?v=hotfoto48"><link rel="stylesheet" href="css/projects.css?v=hotfoto48"></head><body class="hf-projects-page"><div class="noise"></div><header class="nav" id="top"><a class="brand" href="index.html"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></a><nav><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a class="active" href="projects.html">Projects</a><a href="studio.html">AI Studio</a><a href="social.html">Social Studio</a><a href="pricing.html">Pricing</a></nav><div class="nav-actions"><button class="btn ghost" id="signIn">Sign in</button><a class="btn primary" href="studio.html">Launch Studio <span>↗</span></a></div><button class="menu-btn" id="menuBtn">☰</button></header>
-<main class="project-shell"><section class="project-hero"><div><span class="eyebrow">PHOTOGRAPHER WORKSPACE / CLOUD</span><h1>Your productions.<br><em>Always within reach.</em></h1><p>Every shoot, keeper, version and cloud asset in one private workspace. HotFoto keeps the production history separate from the creative surface.</p></div><div class="workspace-status"><span class="status-dot"></span><div><b id="accountState">CHECKING ACCOUNT</b><small id="accountEmail">—</small></div></div></section>
-<section class="workspace-toolbar"><div class="toolbar-search"><span>⌕</span><input id="projectSearch" placeholder="Search productions…" autocomplete="off"></div><select id="statusFilter"><option value="all">All productions</option><option value="active">Active</option><option value="completed">Completed</option><option value="archived">Archived</option></select><button class="btn primary" id="newProject">+ New production</button></section>
-<section class="workspace-grid"><aside class="project-list-panel"><div class="panel-head"><div><span class="eyebrow">PRODUCTIONS</span><h2 id="projectCount">0 shoots</h2></div><button class="icon-btn" id="refreshProjects" title="Refresh">↻</button></div><div id="projectList" class="project-list"><div class="workspace-empty">Connect your gateway and sign in to load your private productions.</div></div></aside>
-<section class="asset-panel"><div class="asset-head"><div><span class="eyebrow" id="assetEyebrow">SELECT A PRODUCTION</span><h2 id="assetTitle">Asset browser</h2><p id="assetMeta">Your cloud-backed frames will appear here.</p></div><div class="asset-actions"><button class="btn ghost" id="projectStudio" disabled>Open Studio ↗</button><button class="btn ghost" id="renameProject" disabled>Rename</button><button class="btn primary" id="deliveryProject" disabled>Client Delivery ↗</button></div></div><div class="asset-summary" id="assetSummary"><div><span>FRAMES</span><b>—</b></div><div><span>KEEPERS</span><b>—</b></div><div><span>QUALITY</span><b>—</b></div><div><span>STYLE DNA</span><b>—</b></div><div><span>STATUS</span><b>—</b></div></div><div id="assetGrid" class="asset-grid"><div class="asset-empty"><div class="asset-empty-mark">✦</div><h3>No production selected</h3><p>Select a shoot on the left to inspect its cloud assets, processing states and delivery history.</p></div></div></section></section></main>
-<div class="workspace-modal" id="newModal" aria-hidden="true"><div class="workspace-backdrop" data-close></div><section class="workspace-dialog"><button class="modal-close" data-close>×</button><span class="eyebrow">NEW PRODUCTION</span><h2>Start a new shoot.</h2><p>Create the cloud project first. Images can then be uploaded directly from the Studio.</p><form id="newForm"><label>Production name<input id="newName" required maxlength="120" placeholder="e.g. Accra Editorial — October"></label><label>Shoot profile<select id="newProfile"><option value="auto">Auto detect</option><option value="portrait">Portrait</option><option value="wedding">Wedding</option><option value="fashion">Fashion / Editorial</option><option value="event">Event</option><option value="product">Product / E-commerce</option><option value="food">Food</option><option value="real-estate">Real Estate / Architecture</option><option value="landscape">Landscape / Travel</option><option value="automotive">Automotive</option><option value="corporate">Corporate / Headshot</option></select></label><button class="btn primary full" type="submit">Create production →</button><small id="newStatus"></small></form></section></div>
-<script src="js/projects.js?v=hotfoto48"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Projects — HotFoto AI</title>
+<meta name="description" content="HotFoto AI production workspace for shoots, assets, selections and delivery.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css?v=hotfoto49.4">
+<link rel="stylesheet" href="css/projects.css?v=hotfoto49.4">
+</head>
+
+<body class="hf-projects-page">
+<div class="noise"></div>
+
+<header class="nav" id="top">
+  <a class="brand" href="index.html"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></a>
+  <nav>
+    <a href="platform.html">Platform</a>
+    <a href="workflow.html">Workflow</a>
+    <a class="active" href="projects.html">Projects</a>
+    <a href="studio.html">AI Studio</a>
+    <a href="pricing.html">Pricing</a>
+  </nav>
+  <div class="nav-actions">
+    <button class="btn ghost" id="signIn">Sign in</button>
+    <a class="btn primary" href="studio.html">Launch Studio <span>↗</span></a>
+  </div>
+  <button class="menu-btn" id="menuBtn">☰</button>
+</header>
+
+<main class="project-shell">
+
+  <section class="project-hero">
+    <div class="hero-copy">
+      <div class="hero-kicker"><span></span> YOUR PHOTOGRAPHY / YOUR WORKSPACE</div>
+      <h1>Every shoot.<br><em>One place.</em></h1>
+      <p>Your productions, selections, cloud assets and delivery history — organised so you can get back to the image instead of managing the system.</p>
+      <div class="hero-actions">
+        <button class="btn primary large" id="newProjectHero">+ New production</button>
+        <a class="hero-link" href="studio.html">Go to AI Studio <span>↗</span></a>
+      </div>
+    </div>
+
+    <div class="hero-console">
+      <div class="console-orbit orbit-one"></div>
+      <div class="console-orbit orbit-two"></div>
+      <div class="console-core"><span>✦</span></div>
+      <div class="console-label label-top"><b>PROJECTS</b><small>PRIVATE WORKSPACE</small></div>
+      <div class="console-label label-left"><b>SHOOT</b><small>→ CULL → EDIT</small></div>
+      <div class="console-label label-right"><b>DELIVER</b><small>GALLERY READY</small></div>
+      <div class="console-caption"><span class="status-dot"></span><b id="heroAccountState">WORKSPACE</b><small id="heroAccountEmail">Connect your Studio account to begin</small></div>
+    </div>
+  </section>
+
+  <section class="workspace-toolbar">
+    <div class="toolbar-search"><span>⌕</span><input id="projectSearch" placeholder="Search productions…" autocomplete="off"></div>
+    <select id="statusFilter">
+      <option value="all">All productions</option>
+      <option value="active">Active</option>
+      <option value="completed">Completed</option>
+      <option value="archived">Archived</option>
+    </select>
+    <button class="btn primary" id="newProject">+ New production</button>
+  </section>
+
+  <section class="workspace-grid">
+    <aside class="project-list-panel">
+      <div class="panel-head">
+        <div>
+          <span class="eyebrow">YOUR PRODUCTIONS</span>
+          <h2 id="projectCount">0 shoots</h2>
+        </div>
+        <button class="icon-btn" id="refreshProjects" title="Refresh">↻</button>
+      </div>
+
+      <div class="production-intro">
+        <span class="intro-icon">✦</span>
+        <div>
+          <b>Your shoots live here.</b>
+          <p>Open a production to inspect frames, keepers, processing and delivery.</p>
+        </div>
+      </div>
+
+      <div id="projectList" class="project-list">
+        <div class="workspace-empty">Connect your gateway and sign in to load your private productions.</div>
+      </div>
+    </aside>
+
+    <section class="asset-panel">
+      <div class="asset-head">
+        <div>
+          <span class="eyebrow" id="assetEyebrow">SELECT A PRODUCTION</span>
+          <h2 id="assetTitle">Your production, at a glance.</h2>
+          <p id="assetMeta">Select a shoot to see its frames, decisions and delivery state.</p>
+        </div>
+
+        <div class="asset-actions">
+          <button class="btn ghost" id="projectStudio" disabled>Open Studio ↗</button>
+          <button class="btn ghost" id="renameProject" disabled>Rename</button>
+          <button class="btn primary" id="deliveryProject" disabled>Client Delivery ↗</button>
+        </div>
+      </div>
+
+      <div class="asset-summary" id="assetSummary">
+        <div><span>FRAMES</span><b>—</b></div>
+        <div><span>KEEPERS</span><b>—</b></div>
+        <div><span>QUALITY</span><b>—</b></div>
+        <div><span>STYLE DNA</span><b>—</b></div>
+        <div><span>STATUS</span><b>—</b></div>
+      </div>
+
+      <div id="assetGrid" class="asset-grid">
+        <div class="asset-empty">
+          <div class="empty-visual">
+            <span>01</span><i></i><span>02</span><i></i><span>03</span>
+          </div>
+          <h3>Choose a production.</h3>
+          <p>Your selected shoot becomes the command centre for its images, AI decisions, versions and delivery.</p>
+          <button class="btn primary" id="emptyNewProject">Create your first production →</button>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <section class="project-principles">
+    <div><span>01</span><b>ONE PRODUCTION</b><small>Keep every decision connected to the shoot.</small></div>
+    <div><span>02</span><b>ORIGINALS SAFE</b><small>Your source files remain untouched.</small></div>
+    <div><span>03</span><b>READY TO DELIVER</b><small>Move from finished frames to client delivery without losing context.</small></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="brand"><span class="brand-mark">✦</span><span>HotFoto<span class="brand-ai">AI</span></span></div>
+  <p>AI photography production, from RAW to remarkable.</p>
+  <div><a href="platform.html">Platform</a><a href="workflow.html">Workflow</a><a href="projects.html">Projects</a><a href="pricing.html">Pricing</a><a href="studio.html">Studio</a></div>
+  <small>© 2026 HotFoto AI · Built for faster photographic production.</small>
+</footer>
+
+<div class="workspace-modal" id="newModal" aria-hidden="true">
+  <div class="workspace-backdrop" data-close></div>
+  <section class="workspace-dialog">
+    <button class="modal-close" data-close>×</button>
+    <span class="eyebrow">NEW PRODUCTION</span>
+    <h2>Start a new shoot.</h2>
+    <p>Create the production first. Then open Studio and bring the shoot in.</p>
+    <form id="newForm">
+      <label>Production name<input id="newName" required maxlength="120" placeholder="e.g. Accra Editorial — October"></label>
+      <label>Shoot profile<select id="newProfile">
+        <option value="auto">Auto detect</option><option value="portrait">Portrait</option><option value="wedding">Wedding</option>
+        <option value="fashion">Fashion / Editorial</option><option value="event">Event</option><option value="product">Product / E-commerce</option>
+        <option value="food">Food</option><option value="real-estate">Real Estate / Architecture</option><option value="landscape">Landscape / Travel</option>
+        <option value="automotive">Automotive</option><option value="corporate">Corporate / Headshot</option>
+      </select></label>
+      <button class="btn primary full" type="submit">Create production →</button>
+      <small id="newStatus"></small>
+    </form>
+  </section>
+</div>
+
+<script src="js/projects.js?v=hotfoto49.4"></script>
+<script>
+(() => {
+  const open = () => {
+    const m=document.getElementById('newModal');
+    if(!m)return;
+    m.classList.add('open'); m.setAttribute('aria-hidden','false');
+    document.getElementById('newName')?.focus();
+  };
+  document.getElementById('newProjectHero')?.addEventListener('click',open);
+  document.getElementById('emptyNewProject')?.addEventListener('click',open);
+  const observer=new MutationObserver(()=>{
+    const state=document.getElementById('accountState')?.textContent || 'WORKSPACE';
+    const email=document.getElementById('accountEmail')?.textContent || '';
+    const hs=document.getElementById('heroAccountState'), he=document.getElementById('heroAccountEmail');
+    if(hs)hs.textContent=state;
+    if(he)he.textContent=email || 'Connect your Studio account to begin';
+  });
+  const source=document.getElementById('accountState');
+  if(source)observer.observe(source,{childList:true,subtree:true,characterData:true});
+})();
+</script>
+</body>
+</html>
