@@ -6,9 +6,9 @@
 <meta name="description" content="HotFoto AI Studio — autonomous photography production from upload to delivery.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=hotfoto41">
+<link rel="stylesheet" href="css/styles.css?v=hotfoto42">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script defer src="js/app.js?v=hotfoto41"></script>
+<script defer src="js/app.js?v=hotfoto42"></script>
 </head>
 <body class="hf-studio-body">
 <div class="noise"></div>
@@ -68,11 +68,22 @@
             <div class="photo-stage" id="photoStage" hidden>
               <div class="canvas-status"><span class="studio-live-dot"></span><b id="canvasState">ANALYSIS READY</b><span id="canvasSubstate">MASTER VIEW</span></div>
               <div class="photo-viewport" id="photoViewport">
+                <div class="canvas-empty-state" id="canvasEmptyState">
+                  <span class="canvas-empty-icon">✦</span>
+                  <b>YOUR IMAGE WILL LIVE HERE</b>
+                  <small>Select a frame below to inspect the HotFoto result.</small>
+                </div>
                 <div class="demo-photo studio-photo" id="studioPhoto">
                   <div class="demo-light"></div><div class="demo-subject"></div><div class="demo-ground"></div>
                 </div>
                 <div class="before-layer" id="beforeLayer"></div>
                 <div class="photo-vignette"></div>
+                <div class="processing-overlay" id="processingOverlay">
+                  <div class="processing-core"><span></span><span></span><span></span><b>AI</b></div>
+                  <div class="processing-copy"><strong id="processingTitle">HOTFOTO IS WORKING</strong><span id="processingDetail">Analyzing your photographs.</span></div>
+                  <div class="processing-progress"><i id="canvasProgress"></i></div>
+                </div>
+                <div class="canvas-batch-hud" id="canvasBatchHud"><span id="canvasFrameLabel">FRAME 01 / 01</span><b id="canvasBatchState">ORIGINAL PREVIEW</b><span id="canvasBatchMeta">SELECTED FRAME</span></div>
                 <button class="compare-toggle" id="compareToggle">ORIGINAL <span>↔</span> HOTFOTO</button>
                 <div class="canvas-score"><small>QUALITY GUARD</small><strong id="canvasScore">—</strong><span>/ 100</span></div>
               </div>
