@@ -86,6 +86,13 @@ export async function ensureSchema() {
       finalized_at timestamptz not null default now()
     );
     create index if not exists hotfoto_finalizations_project_idx on hotfoto_finalizations(project_id, finalized_at desc);
+    create table if not exists hotfoto_albums (
+      id text primary key, project_id text not null references hotfoto_projects(id) on delete cascade,
+      user_id text not null references hotfoto_users(id) on delete cascade,
+      title text not null, format text not null default 'gallery',
+      plan jsonb not null default '{}'::jsonb, created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+    );
+    create index if not exists hotfoto_albums_project_idx on hotfoto_albums(project_id, updated_at desc);
   `);
   return true;
 }
@@ -326,3 +333,17 @@ export async function getPublicDelivery(token) {
   const r=await p.query('select id,project_id as "projectId",user_id as "userId",title,status,proof_status as "proofStatus",client_name as "clientName",client_email as "clientEmail",submitted_at as "submittedAt",asset_ids as "assetIds",options,expires_at as "expiresAt" from hotfoto_deliveries where token_hash=$1',[tokenHash]);
   const d=r.rows[0]; if(!d) return null; if(d.expiresAt && new Date(d.expiresAt).getTime()<=Date.now()) return {...d,status:'expired'}; return d;
 }
+
+export async function createAlbum(userId, projectId, body) {
+  const p = await getPool(); const project = await getProject(userId, projectId); if (!project) throw new Error('PROJECT_NOT_FOUND');
+  const id=`alb_${crypto.randomBytes(10).toString('hex')}`; const title=String(body.title||`${project.name} — AI Gallery`).slice(0,160); const format=String(body.format||'gallery'); const plan=body.plan||{};
+  if (!p) { const albums=await read('albums.json',{}); const row={id,projectId,userId,title,format,plan,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}; albums[id]=row; await write('albums.json',albums); return row; }
+  const r=await p.query('insert into hotfoto_albums(id,project_id,user_id,title,format,plan) values($1,$2,$3,$4,$5,$6) returning id,project_id as "projectId",user_id as "userId",title,format,plan,created_at as "createdAt",updated_at as "updatedAt"',[id,projectId,userId,title,format,plan]); return r.rows[0];
+}
+export async function listAlbums(userId, projectId='') {
+  const p=await getPool();
+  if(!p){ const albums=await read('albums.json',{}); return Object.values(albums).filter(a=>a.userId===userId&&(!projectId||a.projectId===projectId)).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))); }
+  const r=await p.query("select id,project_id as \"projectId\",user_id as \"userId\",title,format,plan,created_at as \"createdAt\",updated_at as \"updatedAt\" from hotfoto_albums where user_id=$1 and ($2 is null or project_id=$2) order by updated_at desc",[userId,projectId||null]);
+  return r.rows;
+}
+export async function getAlbum(userId, albumId) { const p=await getPool(); if(!p){const albums=await read('albums.json',{}); const a=albums[albumId]; return a&&a.userId===userId?a:null;} const r=await p.query('select id,project_id as "projectId",user_id as "userId",title,format,plan,created_at as "createdAt",updated_at as "updatedAt" from hotfoto_albums where id=$1 and user_id=$2',[albumId,userId]); return r.rows[0]||null; }

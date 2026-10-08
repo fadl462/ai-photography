@@ -106,3 +106,7 @@ Client proof submissions can now be validated and finalized into a persistent pa
 
 ## V48.4 — Intelligent Delivery Packaging
 Finalized client selections can now be translated into destination-aware package execution manifests for Original Archive, Web Gallery, Social Set, and Print Ready delivery. The Image Worker remains the source of truth for actual pixel-export completion.
+
+
+## V48.5 — Real Export Execution
+V48.5 executes finalized delivery profiles through Sharp, assembles actual ZIP packages, stores them in object storage, and returns short-lived signed download URLs. See `EXPORT-EXECUTION-V48.5.md`.

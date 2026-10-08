@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { S3Client, CreateMultipartUploadCommand, UploadPartCommand, CompleteMultipartUploadCommand, AbortMultipartUploadCommand, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, CreateMultipartUploadCommand, UploadPartCommand, CompleteMultipartUploadCommand, AbortMultipartUploadCommand, HeadObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const BUCKET = process.env.HOTFOTO_STORAGE_BUCKET || '';
@@ -75,4 +75,20 @@ export async function headObject({ key }) {
   requireStorage();
   const result = await client.send(new HeadObjectCommand({ Bucket: BUCKET, Key: safeKey(key) }));
   return { exists: true, bytes: result.ContentLength || 0, contentType: result.ContentType || null, etag: result.ETag || null, metadata: result.Metadata || {} };
+}
+
+
+export async function getObjectBuffer({ key }) {
+  requireStorage();
+  const result = await client.send(new GetObjectCommand({ Bucket: BUCKET, Key: safeKey(key) }));
+  const chunks = [];
+  for await (const chunk of result.Body) chunks.push(Buffer.from(chunk));
+  return Buffer.concat(chunks);
+}
+
+export async function putObject({ key, body, contentType='application/octet-stream', metadata={} }) {
+  requireStorage();
+  const objectKey = safeKey(key);
+  await client.send(new PutObjectCommand({ Bucket: BUCKET, Key: objectKey, Body: body, ContentType: contentType, Metadata: Object.fromEntries(Object.entries(metadata).slice(0,20).map(([k,v])=>[String(k).toLowerCase().replace(/[^a-z0-9-]/g,'-').slice(0,50),String(v).slice(0,200)])) }));
+  return { ok:true, key:objectKey, publicUrl:publicUrl(objectKey) };
 }

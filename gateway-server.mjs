@@ -4,8 +4,8 @@ import sharp from 'sharp';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, getProject, listProjectAssets, updateProject, createAsset, getAsset, updateAssetMetadata, createDelivery, listDeliveries, getPublicDelivery, getProofing, saveProofAction, submitProofing, getDeliveryProofForOwner, finalizeDelivery, getFinalizationForOwner, createDeliveryPackagePlan } from './db.mjs';
-import { storageHealth, initiateMultipart, completeMultipart, abortMultipart, headObject, signedDownload } from './storage.mjs';
+import { dbHealth, ensureSchema, createUser, findUser, saveSession, getSession, deleteSession, getProfile, saveProfile, createProject, listProjects, getProject, listProjectAssets, updateProject, createAsset, getAsset, updateAssetMetadata, createDelivery, listDeliveries, getPublicDelivery, getProofing, saveProofAction, submitProofing, getDeliveryProofForOwner, finalizeDelivery, getFinalizationForOwner, createDeliveryPackagePlan, createAlbum, listAlbums, getAlbum } from './db.mjs';
+import { storageHealth, initiateMultipart, completeMultipart, abortMultipart, headObject, signedDownload, getObjectBuffer, putObject } from './storage.mjs';
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -73,6 +73,18 @@ async function proofSubmit(body) { return await submitProofing(String(body.token
 async function proofOwner(body,userId) { return {ok:true, proof:await getDeliveryProofForOwner(userId,String(body.deliveryId||''))}; }
 async function deliveryFinalize(body,userId) { return await finalizeDelivery(userId,String(body.deliveryId||''),body); }
 async function finalizationOwner(body,userId) { return {ok:true, finalization:await getFinalizationForOwner(userId,String(body.deliveryId||''))}; }
+
+function albumLayout(assets, format='gallery') {
+  const imgs=(assets||[]).map((a,i)=>({assetId:a.id,name:a.name,storageKey:a.storageKey,mimeType:a.mimeType,width:a.width||a.metadata?.width||null,height:a.height||a.metadata?.height||null,role:i===0?'cover':(i<4?'hero':'story'),order:i+1}));
+  const pages=[]; let page=1;
+  if(imgs.length){ pages.push({page:page++,layout:'cover',assetIds:[imgs[0].assetId],headline:'Your Story, Beautifully Delivered'}); }
+  for(let i=1;i<imgs.length;i+=3){ const chunk=imgs.slice(i,i+3); pages.push({page:page++,layout:chunk.length===1?'hero':chunk.length===2?'split':'triptych',assetIds:chunk.map(x=>x.assetId),headline:chunk.length===1?'Hero moment':chunk.length===2?'The story continues':'Story sequence'}); }
+  return {format,theme:'cinematic-editorial',title:'AI Curated Story',coverAssetId:imgs[0]?.assetId||null,assets:imgs,pages,designRules:{keepFacesLarge:true,avoidAdjacentDuplicates:true,visualRhythm:'hero → detail → context',maxImagesPerSpread:3}};
+}
+async function albumPlan(body,userId){ const projectId=String(body.projectId||''); const assets=await listProjectAssets(userId,projectId); const selected=Array.isArray(body.assetIds)&&body.assetIds.length?assets.filter(a=>body.assetIds.includes(a.id)):assets; return {ok:true,plan:albumLayout(selected,body.format||'gallery'),projectId}; }
+async function albumCreate(body,userId){ const plan=body.plan||{}; const row=await createAlbum(userId,String(body.projectId||''),{title:body.title,format:body.format||'gallery',plan}); return {ok:true,album:row}; }
+async function albumList(body,userId){ return {ok:true,albums:await listAlbums(userId,String(body.projectId||''))}; }
+async function albumGet(body,userId){ const album=await getAlbum(userId,String(body.albumId||'')); if(!album) throw new Error('ALBUM_NOT_FOUND'); return {ok:true,album}; }
 
 async function publicDelivery(token) { const d=await getPublicDelivery(token); if(!d) throw new Error('DELIVERY_NOT_FOUND'); const proof=await getProofing(d); if(d.status==='expired') return {ok:true,delivery:d,proof,assets:[]}; const assets=[]; for(const id of (d.assetIds||[])){ const asset=await getAsset(d.userId,id); if(!asset) continue; let download=null; if(asset.storageKey && storageHealth().enabled){ try { download=await signedDownload({key:asset.storageKey,expiresIn:300}); } catch {} } assets.push({...asset,download}); } return {ok:true,delivery:d,proof,assets}; }
 
@@ -372,6 +384,28 @@ async function abortAssetUpload(body, userId) {
   return { ok: true, asset: { ...asset, ...updated } };
 }
 
+function crc32(buf) { let c=0xffffffff; for(const b of buf){ c ^= b; for(let k=0;k<8;k++) c=(c>>>1)^((c&1)?0xedb88320:0); } return (c^0xffffffff)>>>0; }
+function zipStore(files) {
+  const locals=[], centrals=[]; let offset=0;
+  for(const f of files){ const name=Buffer.from(f.name); const data=Buffer.from(f.data); const crc=crc32(data); const local=Buffer.alloc(30+name.length); local.writeUInt32LE(0x04034b50,0); local.writeUInt16LE(20,4); local.writeUInt16LE(0,6); local.writeUInt16LE(0,8); local.writeUInt16LE(0,10); local.writeUInt16LE(0,12); local.writeUInt32LE(crc,14); local.writeUInt32LE(data.length,18); local.writeUInt32LE(data.length,22); local.writeUInt16LE(name.length,26); local.writeUInt16LE(0,28); name.copy(local,30); locals.push(local,data);
+    const central=Buffer.alloc(46+name.length); central.writeUInt32LE(0x02014b50,0); central.writeUInt16LE(20,4); central.writeUInt16LE(20,6); central.writeUInt16LE(0,8); central.writeUInt16LE(0,10); central.writeUInt16LE(0,12); central.writeUInt16LE(0,14); central.writeUInt32LE(crc,16); central.writeUInt32LE(data.length,20); central.writeUInt32LE(data.length,24); central.writeUInt16LE(name.length,28); central.writeUInt16LE(0,30); central.writeUInt16LE(0,32); central.writeUInt16LE(0,34); central.writeUInt16LE(0,36); central.writeUInt32LE(0,38); central.writeUInt32LE(offset,42); name.copy(central,46); centrals.push(central); offset += local.length + data.length; }
+  const centralSize=centrals.reduce((n,b)=>n+b.length,0), centralOffset=offset; const end=Buffer.alloc(22); end.writeUInt32LE(0x06054b50,0); end.writeUInt16LE(0,4); end.writeUInt16LE(0,6); end.writeUInt16LE(0,8); end.writeUInt16LE(files.length,10); end.writeUInt32LE(centralSize,12); end.writeUInt32LE(centralOffset,16); return Buffer.concat([...locals,...centrals,end]);
+}
+async function executeDeliveryPackage(body,userId){
+  const deliveryId=String(body.deliveryId||''); const fin=await getFinalizationForOwner(userId,deliveryId); if(!fin) throw new Error('FINALIZATION_NOT_FOUND');
+  const profiles={original_archive:{format:'original',maxWidth:null,quality:null,folder:'01-originals'},web_gallery:{format:'jpeg',maxWidth:2400,quality:86,folder:'02-web-gallery'},social:{format:'jpeg',maxWidth:2048,quality:88,folder:'03-social'},print:{format:'jpeg',maxWidth:6000,quality:96,folder:'04-print'}};
+  const requested=Array.isArray(body.profiles)&&body.profiles.length?body.profiles:[String(body.profile||'web_gallery')]; const keys=[...new Set(requested.map(String).filter(k=>profiles[k]))]; if(!keys.length) throw new Error('NO_VALID_PACKAGE_PROFILES');
+  const assets=[]; for(const id of fin.selectedAssetIds||[]){ const a=await getAsset(userId,id); if(!a) throw new Error(`ASSET_NOT_FOUND:${id}`); if(!a.storageKey) throw new Error(`ASSET_NOT_IN_OBJECT_STORAGE:${id}`); assets.push(a); }
+  if(!storageHealth().enabled) throw new Error('OBJECT_STORAGE_NOT_CONFIGURED');
+  const files=[]; const manifest=[];
+  for(const key of keys){ const cfg=profiles[key]; for(const a of assets){ const input=await getObjectBuffer({key:a.storageKey}); let out=input, ext=path.extname(a.name||'').toLowerCase()||'.jpg', mime=a.mimeType||'image/jpeg';
+      if(cfg.format==='jpeg'){ out=await sharp(input).rotate().resize({width:cfg.maxWidth,withoutEnlargement:true}).jpeg({quality:cfg.quality,mozjpeg:true}).toBuffer(); ext='.jpg'; mime='image/jpeg'; }
+      const base=path.basename(a.name||`asset-${a.id}`,path.extname(a.name||'')); const name=`${cfg.folder}/${base}${ext}`; files.push({name,data:out}); manifest.push({assetId:a.id,profile:key,name,bytes:out.length,mimeType:mime}); }
+  }
+  const zip=zipStore(files); const projectId=String(fin.projectId); const storageKey=`${userId}/${projectId}/deliveries/${deliveryId}/HotFoto-${deliveryId}.zip`; await putObject({key:storageKey,body:zip,contentType:'application/zip',metadata:{deliveryId,projectId,userId}}); const dl=await signedDownload({key:storageKey,expiresIn:900});
+  return {ok:true,status:'completed',deliveryId,projectId,package:{storageKey,download:dl,bytes:zip.length,files:manifest,profiles:keys,generatedAt:new Date().toISOString()}};
+}
+
 async function deliver(body) {
   return {
     ok: true,
@@ -391,11 +425,11 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         service: 'hotfoto-ai-gateway',
-        version: 'v48.2',
+        version: 'v48.6',
         provider: OPENAI_API_KEY ? 'openai' : 'unconfigured',
         visionModel: VISION_MODEL,
         plannerModel: PLANNER_MODEL,
-        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true, finalization: true, deliveryIntelligence: true, clientFeedbackLearning: true, intelligentPackaging: true, packageProfiles: true, executionManifests: true }
+        capabilities: { plan: true, analyze: true, styleDNA: true, selfCorrection: true, quality: true, processImage: true, deliverManifest: true, clientDelivery: true, expiringShareLinks: true, deterministicWorker: true, generativeProviderHook: true, persistentIntelligence: true, preferenceLearning: true, projectMemory: true, accounts: true, hashedPasswords: true, expiringSessions: true, postgres: Boolean(process.env.DATABASE_URL), cloudProjectMetadata: Boolean(process.env.DATABASE_URL), objectStorage: storageHealth().enabled, multipartUploads: storageHealth().multipart, multiDeviceMemory: Boolean(process.env.DATABASE_URL), clientProofing: true, clientFavorites: true, clientSelection: true, clientComments: true, proofSubmission: true, finalization: true, deliveryIntelligence: true, clientFeedbackLearning: true, intelligentPackaging: true, packageProfiles: true, executionManifests: true, exportExecution: true, zipDelivery: true, signedPackageDownloads: true, albumDesigner: true, albumPlanning: true, galleryDesign: true, persistentAlbums: true }
       });
     }
     if (req.method === 'GET' && url.pathname === '/health/db') return json(res, 200, await dbHealth());
@@ -404,6 +438,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && (url.pathname === '/share/proof/action' || url.pathname === '/share/proof/submit')) { const body = await readBody(req); return json(res, 200, url.pathname.endsWith('/action') ? await proofAction(body) : await proofSubmit(body)); }
     if (req.method === 'GET' && url.pathname === '/auth/me') { const session = await authenticate(req); return json(res, 200, { ok: true, user: { id: session.userId, email: session.email }, expiresAt: new Date(Number(session.expiresAt)).toISOString() }); }
     if (req.method === 'GET' && url.pathname === '/projects') return json(res, 200, await projectList((await authenticate(req)).userId));
+    if (req.method === 'GET' && url.pathname.startsWith('/albums/')) { const session=await authenticate(req); return json(res,200,await albumGet({albumId:url.pathname.split('/').filter(Boolean)[1]},session.userId)); }
     if (req.method === 'GET' && url.pathname.startsWith('/projects/')) { const session=await authenticate(req); const parts=url.pathname.split('/').filter(Boolean); const projectId=parts[1]; if(parts[2]==='assets') return json(res,200,await projectAssets(session.userId,projectId)); return json(res,200,await projectDetail(session.userId,projectId)); }
     if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
     const body = await readBody(req);
@@ -438,6 +473,10 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/self-correct') return json(res, 200, await selfCorrect(body));
     if (url.pathname === '/edit') return json(res, 200, await imageEdit(body));
     if (url.pathname === '/process') return json(res, 200, await processRequest(body));
+    if (url.pathname === '/delivery/execute') return json(res, 200, await executeDeliveryPackage(body, session.userId));
+    if (url.pathname === '/album/plan') return json(res, 200, await albumPlan(body, session.userId));
+    if (url.pathname === '/album/create') return json(res, 201, await albumCreate(body, session.userId));
+    if (url.pathname === '/album/list') return json(res, 200, await albumList(body, session.userId));
     if (url.pathname === '/deliver') return json(res, 200, await deliver(body));
     return json(res, 404, { ok: false, error: 'NOT_FOUND' });
   } catch (err) {
