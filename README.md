@@ -42,3 +42,10 @@ The next layer is now implemented as an executable Node gateway. With `OPENAI_AP
 The gateway now includes a real server-side image worker powered by Sharp. When the Studio is connected to the gateway, `/process` can execute non-generative photographic operations (auto exposure, contrast, saturation, sharpening, resize/rotation, optional normalize/denoise) and returns a processed image. The original remains client-side and immutable.
 
 Generative operations such as remove/replace/expand, relight, background replacement and super-resolution are explicitly returned as pending operations; HotFoto does not fake these capabilities. The architecture is ready for a dedicated generative provider to consume the same operation manifest.
+
+
+## V47.5 — Photographer Intelligence
+
+V47.5 adds persistent photographer intelligence behind the Studio gateway. A profile can retain Style DNA, approval/rejection feedback and recent production decisions. The planner receives this memory on future shoots and treats it as a preference layer rather than an absolute instruction. Originals remain untouched and the browser continues to work safely without the gateway.
+
+Memory endpoints: `POST /memory`, `POST /memory/style`, `POST /memory/feedback`. Storage defaults to the gateway `data/` directory and can be redirected with `HOTFOTO_MEMORY_DIR`. For production, replace the file store with authenticated encrypted storage tied to the photographer account.

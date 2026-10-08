@@ -1,6 +1,8 @@
 import http from 'node:http';
 import { URL } from 'node:url';
 import sharp from 'sharp';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -11,6 +13,7 @@ const PLANNER_MODEL = process.env.HOTFOTO_PLANNER_MODEL || VISION_MODEL;
 const IMAGE_MODEL = process.env.HOTFOTO_IMAGE_MODEL || 'gpt-image-2';
 const MAX_BODY = Number(process.env.HOTFOTO_MAX_BODY || 28 * 1024 * 1024);
 const WORKER_MAX_EDGE = Number(process.env.HOTFOTO_WORKER_MAX_EDGE || 5000);
+const MEMORY_DIR = process.env.HOTFOTO_MEMORY_DIR || path.join(process.cwd(), 'data');
 
 const json = (res, status, body) => {
   const out = JSON.stringify(body);
@@ -79,8 +82,44 @@ async function openAIResponses({ model, input, maxOutputTokens = 900 }) {
 
 const systemRules = `You are HotFoto AI's photographic intelligence engine. You are not a generic image describer. Think like a professional photographer, editor and image-quality engineer. Preserve identity, natural skin texture, intentional lighting and photographic realism. Never invent certainty. Return conservative confidence scores. Output JSON only.`;
 
+const safeProfileId = value => String(value || 'default').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || 'default';
+const memoryPath = profileId => path.join(MEMORY_DIR, `profile-${safeProfileId(profileId)}.json`);
+const defaultMemory = profileId => ({ profileId: safeProfileId(profileId), version: 1, styleDNA: null, preferences: {}, feedback: { approved: 0, rejected: 0, edited: 0 }, decisions: [], updatedAt: new Date().toISOString() });
+async function readMemory(profileId) {
+  try { return JSON.parse(await fs.readFile(memoryPath(profileId), 'utf8')); }
+  catch { return defaultMemory(profileId); }
+}
+async function writeMemory(memory) {
+  await fs.mkdir(MEMORY_DIR, { recursive: true });
+  memory.updatedAt = new Date().toISOString();
+  await fs.writeFile(memoryPath(memory.profileId), JSON.stringify(memory, null, 2), 'utf8');
+  return memory;
+}
+async function getMemory(body) {
+  const memory = await readMemory(body.profileId);
+  return { ok: true, ...memory };
+}
+async function saveStyleMemory(body) {
+  if (!body.styleDNA) throw new Error('STYLE_DNA_REQUIRED');
+  const memory = await readMemory(body.profileId);
+  memory.styleDNA = body.styleDNA;
+  memory.decisions = [{ type: 'style-dna-learned', project: body.project || null, references: body.references || body.styleDNA.references || null, at: new Date().toISOString() }, ...memory.decisions].slice(0, 50);
+  return writeMemory(memory);
+}
+async function saveFeedback(body) {
+  const memory = await readMemory(body.profileId);
+  const action = ['approved','rejected','edited'].includes(body.action) ? body.action : 'edited';
+  memory.feedback[action] = Number(memory.feedback[action] || 0) + 1;
+  memory.decisions = [{ type: 'photographer-feedback', action, frameName: body.frameName || null, project: body.project || null, note: String(body.note || '').slice(0, 500), at: new Date().toISOString() }, ...memory.decisions].slice(0, 50);
+  return writeMemory(memory);
+}
+
+
 async function plan(body) {
-  const prompt = `${systemRules}\nCreate a production plan for this shoot. Profile: ${body.shootProfile || 'auto'}. Mode: ${body.mode || 'auto'}. Frames: ${body.frameCount || 0}. Photographer intent: ${body.intent || 'none'}. Return JSON with keys: profile, summary, priorities (array), reviewThreshold (0-1), styleScore (0-100), stages (array of {name,enabled,reason}), riskNotes (array).`;
+  const memory = await readMemory(body.profileId);
+  const learnedStyle = memory.styleDNA ? JSON.stringify(memory.styleDNA).slice(0, 7000) : 'No persistent Style DNA yet.';
+  const feedback = JSON.stringify(memory.feedback || {});
+  const prompt = `${systemRules}\nCreate a production plan for this shoot. Profile: ${body.shootProfile || 'auto'}. Mode: ${body.mode || 'auto'}. Frames: ${body.frameCount || 0}. Photographer intent: ${body.intent || 'none'}. Persistent photographer intelligence: ${learnedStyle}. Historical feedback counts: ${feedback}. Use learned style as a preference, not a command, and preserve image-specific judgment. Return JSON with keys: profile, summary, priorities (array), reviewThreshold (0-1), styleScore (0-100), stages (array of {name,enabled,reason}), riskNotes (array).`;
   const response = await openAIResponses({
     model: PLANNER_MODEL,
     input: [{ role: 'user', content: [{ type: 'input_text', text: prompt }] }],
@@ -278,6 +317,9 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/analyze') return json(res, 200, await analyze(body));
     if (url.pathname === '/quality') return json(res, 200, await quality(body));
     if (url.pathname === '/style-dna') return json(res, 200, await styleDNA(body));
+    if (url.pathname === '/memory') return json(res, 200, await getMemory(body));
+    if (url.pathname === '/memory/style') return json(res, 200, await saveStyleMemory(body));
+    if (url.pathname === '/memory/feedback') return json(res, 200, await saveFeedback(body));
     if (url.pathname === '/self-correct') return json(res, 200, await selfCorrect(body));
     if (url.pathname === '/edit') return json(res, 200, await imageEdit(body));
     if (url.pathname === '/process') return json(res, 200, await processRequest(body));
