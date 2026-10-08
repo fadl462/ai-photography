@@ -24,3 +24,7 @@ See `HOTFOTO-50-CAPABILITY-AUDIT.md` for the full 50-capability tracking matrix.
 
 ## V47 — Model Gateway
 V47 adds a server-side model gateway boundary. The Studio can store a gateway endpoint, test `/health`, request a production plan from `/plan`, and safely fall back to the local prototype if the gateway is unavailable. Provider API keys are not stored in the browser. See `HOTFOTO-V47-MODEL-GATEWAY.md`.
+
+
+## V47.1 — Real Vision Gateway
+The next layer is now implemented as an executable Node gateway. With `OPENAI_API_KEY` configured, `/plan`, `/analyze`, and `/quality` call a multimodal model server-side. The browser sends resized previews to the gateway; provider secrets never enter Studio JavaScript. `/process` and `/deliver` remain explicit manifests until a dedicated pixel-processing worker is connected. See `GATEWAY-SETUP.md`.

@@ -47,3 +47,8 @@ The production gateway should expose:
 
 ## V47 status
 The Studio UI is **gateway-ready**, but no external model provider is claimed as connected until a real backend is deployed and authenticated.
+
+## V47.1 live inference bridge
+V47.1 adds an executable Node gateway (`gateway-server.mjs`) using the OpenAI Responses API as the first provider adapter. The Studio now sends resized image previews to `/analyze` for model-backed photographic understanding/culling signals and sends the selected processed frame to `/quality` for model-backed Quality Guard inspection when a gateway is configured.
+
+The provider key stays server-side. `/process` and `/deliver` deliberately remain manifest-only until a dedicated image worker is connected; HotFoto does not claim pixel editing that is not actually being performed.
