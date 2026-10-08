@@ -1,4 +1,4 @@
-HotFoto AI V49.7 — Projects Hero Spacing Fix
+HotFoto AI V49.8 — Meaningful Photography Visuals
 
 Replace:
 - projects.html
@@ -7,4 +7,9 @@ Replace:
 Keep:
 - js/projects.js
 
-This is a focused spacing correction. It removes the oversized blank area between the navigation and the Projects hero content while preserving the V49.6 cinematic visual system.
+The Projects hero now uses meaningful photographic imagery rather than abstract CSS artwork:
+- portrait / wedding photography
+- fashion / editorial photography
+- location / landscape photography
+
+The images are used only in the hero's decorative contact-sheet visual. The actual project workspace remains functional and unchanged.

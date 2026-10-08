@@ -155,3 +155,40 @@ body.hf-projects-page .hero-workspace{
   body.hf-projects-page .project-hero{min-height:auto !important;padding-top:10px !important}
   body.hf-projects-page .hero-copy{padding-top:22px !important}
 }
+
+/* V49.8 — meaningful photography visuals */
+body.hf-projects-page .frame-art{
+  background-size:cover !important;
+  background-position:center !important;
+  filter:saturate(.92) contrast(1.04) !important;
+}
+body.hf-projects-page .art-one{
+  background-image:
+    linear-gradient(180deg,rgba(4,7,12,.03),rgba(4,7,12,.32)),
+    url("https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=88") !important;
+}
+body.hf-projects-page .art-two{
+  background-image:
+    linear-gradient(180deg,rgba(4,7,12,.04),rgba(4,7,12,.28)),
+    url("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=88") !important;
+}
+body.hf-projects-page .art-three{
+  background-image:
+    linear-gradient(180deg,rgba(4,7,12,.04),rgba(4,7,12,.3)),
+    url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=88") !important;
+}
+body.hf-projects-page .frame-front:after{
+  content:"PORTRAIT  /  EDITORIAL  /  LOCATION";
+  position:absolute;
+  left:10px;
+  right:10px;
+  bottom:8px;
+  z-index:5;
+  padding-top:8px;
+  border-top:1px solid rgba(255,255,255,.25);
+  color:rgba(255,255,255,.82);
+  font:600 6px/1 Space Grotesk,sans-serif;
+  letter-spacing:.14em;
+}
+body.hf-projects-page .frame-front .frame-mark{bottom:28px}
+body.hf-projects-page .visual-label.label-project b:before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#5ce0ff;box-shadow:0 0 10px #5ce0ff;margin:0 6px 1px 0}
